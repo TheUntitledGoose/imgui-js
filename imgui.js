@@ -12,7 +12,7 @@ const TAB_COLOR_UNSEL = "#000000";
 const BACKGROUND = "#151617";
 const INTERACTABLE_BACKGROUND = "#141618";
 const INTERACTABLE_SELECT = "#4295f9";
-const INTERACTABLE_SELECT_MORE = "#42c5ff";
+const INTERACTABLE_SELECT_MORE = "#336cae";
 const BUTTON_BACKGROUND = "#254370";
 
 const TAB_HEIGHT = 20;
@@ -190,13 +190,14 @@ class Slider {
     this.slideMin = this.x+7*BUTTON_SIZE/8;
     this.slideMax = (2*this.width/3) + this.x;
 
-    rect(x, y, 2*this.width/3, BUTTON_SIZE, BUTTON_BACKGROUND);
-
+		
     if ( this.checkClr(curX, curY) ) {
-			rect(this.slidex + x, y+BUTTON_SIZE/8, 3*BUTTON_SIZE/5, 6*BUTTON_SIZE/8, INTERACTABLE_SELECT_MORE);
+			rect(x, y, 2*this.width/3, BUTTON_SIZE, INTERACTABLE_SELECT_MORE);
 		} else {
-			rect(this.slidex + x, y+BUTTON_SIZE/8, 3*BUTTON_SIZE/5, 6*BUTTON_SIZE/8, INTERACTABLE_SELECT);	
+			rect(x, y, 2*this.width/3, BUTTON_SIZE, BUTTON_BACKGROUND);			
 		}
+
+		rect(this.slidex + x, y+BUTTON_SIZE/8, 3*BUTTON_SIZE/5, 6*BUTTON_SIZE/8, INTERACTABLE_SELECT);	
 
     imgui.text(
         ((this.slidex-BUTTON_SIZE/8)/(this.slideMax-this.x-((4*(BUTTON_SIZE/5))))*(this.max-this.min)+this.min)
