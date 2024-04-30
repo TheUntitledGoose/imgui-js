@@ -7,7 +7,7 @@ let windowHeight = window.innerHeight;
 const TAB_COLOR_SEL = "#29477d";
 // const TAB_COLOR_SEL = "#0d0d0d";
 // const TAB_COLOR_SEL = "#242424";
-const TAB_COLOR_UNSEL = "#000000";
+const TAB_COLOR_UNSEL = "#302f30";
 // const BACKGROUND = "#0e0e0e";
 const BACKGROUND = "#151617";
 const INTERACTABLE_BACKGROUND = "#141618";
@@ -55,6 +55,7 @@ class ImGui {
 
 		this.moving = false;
 		this.hidden = false;
+		this.selected = true;
 
 		this.elements = [];
 	}
@@ -71,6 +72,9 @@ class ImGui {
 		var maxX = this.x + 10 + this.width;
 		var maxY = this.y + TAB_HEIGHT * 1.5;
 
+		if (between(x, this.x, this.x + this.width) && between(y, this.y, this.y + this.height)) {
+			this.selected = true
+		} else this.selected = false
 		if (between(x, minX, maxX) && between(y, minY, maxY)) return true;
 		return false;
 	}
@@ -139,8 +143,9 @@ class ImGui {
 
 	draw() {
 
+		var color = this.selected ? TAB_COLOR_SEL : TAB_COLOR_UNSEL
 		if (!this.hidden) {
-			rect(this.x, this.y, this.width, TAB_HEIGHT, TAB_COLOR_SEL);
+			rect(this.x, this.y, this.width, TAB_HEIGHT, color);
 			
 			this.closeTrig();
 			
@@ -153,7 +158,7 @@ class ImGui {
 			}
 			
 		} else {
-			rect(this.x, this.y, this.width, TAB_HEIGHT, TAB_COLOR_UNSEL);
+			rect(this.x, this.y, this.width, TAB_HEIGHT, "#000");
 			
 			this.openTrig();
 		}
@@ -358,8 +363,6 @@ c.addEventListener("mousedown", function (e) {
 
 document.addEventListener("contextmenu", function (e) { 
 	e.preventDefault(); 
-
-	// handle right click for slider
 })
 
 c.addEventListener("mousemove", function (e) {
