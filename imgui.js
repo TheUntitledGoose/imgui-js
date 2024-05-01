@@ -58,6 +58,33 @@ class ImGui {
 		this.selected = true;
 
 		this.elements = [];
+
+		document.querySelector("canvas").addEventListener("mousedown", (e) => {
+			if (e.buttons == 1) {
+				this.checkClick(e.x, e.y, e);
+		
+				if ( this.checkHide(e.x, e.y) ) {
+					this.hidden = !this.hidden;
+				}
+			}
+		
+			if (this.checkMove(e.x, e.y)) {
+				this.moving = true;
+			} else {
+				this.moving = false;
+			}
+		});
+		
+		document.querySelector("canvas").addEventListener("mousemove", (e) => {
+			curX = e.x;
+			curY = e.y;
+			if (e.buttons == 1 && this.moving) {
+				this.update(this.x + e.movementX, this.y + e.movementY);
+			} else if (e.buttons == 1) {
+				this.checkClick(e.x, e.y, e);
+			}
+		});
+
 	}
 
 	text(text, x, y) {
@@ -324,6 +351,8 @@ var imgui = new ImGui(200, 250, 400, 100);
 imgui.checkbox("Test", true);
 imgui.slider(0, 100);
 imgui.button("this is a very long text", true);
+
+var imgui2 = new ImGui(500, 850, 400, 100);
 // imgui.slider(0, 100);
 // imgui.slider(0, 100);
 // imgui.slider(0, 100);
@@ -341,37 +370,11 @@ function animate() {
 	ctx.clearRect(0, 0, c.width, c.height);
 
 	imgui.draw();
+	imgui2.draw();
 }
 
 setInterval(animate, 10);
 
-c.addEventListener("mousedown", function (e) {
-	if (e.buttons == 1) {
-		imgui.checkClick(e.x, e.y, e);
-
-		if ( imgui.checkHide(e.x, e.y) ) {
-			imgui.hidden = !imgui.hidden;
-		}
-	}
-
-  if (imgui.checkMove(e.x, e.y)) {
-    imgui.moving = true;
-  } else {
-    imgui.moving = false;
-  }
-});
-
 document.addEventListener("contextmenu", function (e) { 
 	e.preventDefault(); 
 })
-
-c.addEventListener("mousemove", function (e) {
-	curX = e.x;
-	curY = e.y;
-	if (e.buttons == 1 && imgui.moving) {
-		imgui.update(imgui.x + e.movementX, imgui.y + e.movementY);
-	} else if (e.buttons == 1) {
-	  imgui.checkClick(e.x, e.y, e);
-  }
-});
-
