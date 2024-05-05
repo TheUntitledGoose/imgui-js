@@ -124,17 +124,21 @@ class ImGui {
 	}
 
 	checkbox(text = "Placeholder", toggle = false) {
-		this.elements.push(new Checkbox(text, toggle));
+		var checkbox = new Checkbox(text, toggle);
+		this.elements.push(checkbox);
+		return checkbox;
 	}
 
 	button(text = "Placeholder") {
-		var button = new Button(text)
+		var button = new Button(text);
 		this.elements.push(button);
 		return button;
 	}
 
 	slider(min = 0, max = 100) {
-		this.elements.push(new Slider(min, max, this.width));
+		var slider = new Slider(min, max, this.width)
+		this.elements.push(slider);
+		return slider;
   }
 
 	number(min = 0, max = 100) {}
@@ -209,6 +213,7 @@ class Slider {
     this.y;
 
     this.slidex = 0;
+		this.state = 0;
 
     this.min = min;
     this.max = max;
@@ -234,9 +239,12 @@ class Slider {
 		rect(this.slidex + x, y+BUTTON_SIZE/8, 3*BUTTON_SIZE/5, 6*BUTTON_SIZE/8, INTERACTABLE_SELECT);	
 
     imgui.text(
-        ((this.slidex-BUTTON_SIZE/8)/(this.slideMax-this.x-((4*(BUTTON_SIZE/5))))*(this.max-this.min)+this.min)
+        ((this.slidex-BUTTON_SIZE/8)/(this.slideMax-this.x-(4*(BUTTON_SIZE/5)))*this.max+this.min)
         .toFixed(0),
     x + (this.width/3)-15, this.y+3*BUTTON_SIZE/4);
+
+		this.state = Math.round((this.slidex-BUTTON_SIZE/8)/(this.slideMax-this.x-(4*(BUTTON_SIZE/5)))*this.max+this.min);
+
   }
 
 	checkClr(x, y) {
@@ -259,6 +267,7 @@ class Slider {
         Math.max(x, this.slideMin),
         this.slideMax 
       ) - 3*BUTTON_SIZE/5-2-this.x;
+
 			return true;
     }
 		return false;
@@ -359,8 +368,8 @@ class Checkbox {
 }
 
 let imgui = new ImGui(200, 250, 400, 100);
-imgui.checkbox("Test", true);
-imgui.slider(0, 100);
+let checkbox = imgui.checkbox("Test", true);
+let slider = imgui.slider(0, 100);
 let btn = imgui.button("this is a very long text", true);
 
 // var imgui2 = new ImGui(500, 850, 400, 100);
@@ -376,7 +385,9 @@ function animate() {
 
 	if (btn.state) {
 		console.log("clicked")
+		console.log(slider.state)
 	}
+
 }
 
 setInterval(animate, 10);
