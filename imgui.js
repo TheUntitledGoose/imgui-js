@@ -128,7 +128,9 @@ class ImGui {
 	}
 
 	button(text = "Placeholder") {
-		this.elements.push(new Button(text));
+		var button = new Button(text)
+		this.elements.push(button);
+		return button;
 	}
 
 	slider(min = 0, max = 100) {
@@ -268,6 +270,15 @@ class Button {
 		this.x = 0;
 		this.y = 0;
 		this.text = text;
+
+		document.querySelector("canvas").addEventListener("mousedown", (e) => {
+
+			if (e.buttons == 1 && this.check(e.x,e.y)) {
+				this.state = true;
+				setTimeout( () => {this.state = false}, 10 )
+			}
+
+		});
 	}
 
 	check(x, y, e) {
@@ -347,30 +358,25 @@ class Checkbox {
 	}
 }
 
-var imgui = new ImGui(200, 250, 400, 100);
+let imgui = new ImGui(200, 250, 400, 100);
 imgui.checkbox("Test", true);
 imgui.slider(0, 100);
-imgui.button("this is a very long text", true);
+let btn = imgui.button("this is a very long text", true);
 
-var imgui2 = new ImGui(500, 850, 400, 100);
-// imgui.slider(0, 100);
-// imgui.slider(0, 100);
-// imgui.slider(0, 100);
-// imgui.slider(0, 100);
-// imgui.slider(0, 100);
-// imgui.slider(0, 100);
-// imgui.slider(0, 100);
-// imgui.slider(0, 100);
-// imgui.slider(0, 100);
-// imgui.slider(0, 100);
-// imgui.slider(0, 100);
+// var imgui2 = new ImGui(500, 850, 400, 100);
+
 imgui.init();
+// imgui2.init();
 
 function animate() {
 	ctx.clearRect(0, 0, c.width, c.height);
 
 	imgui.draw();
-	imgui2.draw();
+	// imgui2.draw();
+
+	if (btn.state) {
+		console.log("clicked")
+	}
 }
 
 setInterval(animate, 10);
