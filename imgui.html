@@ -7,4 +7,46 @@
 <body style='overflow: none;'>
 	<canvas id='myCanvas' width=1000 height=500></canvas>
   <script src="imgui.js"></script>
+
+	<script type="module">
+
+	import { ImGui } from "./imgui.js"
+
+	const c = document.getElementById("myCanvas");
+	const ctx = c.getContext("2d");
+
+	let windowWidth = window.innerWidth;
+	let windowHeight = window.innerHeight;
+	
+	let imgui = new ImGui(200, 250, 400, 100);
+	let checkbox = imgui.checkbox("Test", true);
+	let slider = imgui.slider(0, 100);
+	let btn = imgui.button("this is a very long text", true);
+
+	// var imgui2 = new ImGui(500, 850, 400, 100);
+
+	imgui.init();
+	// imgui2.init();
+
+	function animate() {
+		ctx.clearRect(0, 0, c.width, c.height);
+
+		imgui.draw();
+		// imgui2.draw();
+
+		if (btn.state) {
+			console.log("clicked")
+			console.log(slider.state)
+			console.log(checkbox.toggle)
+		}
+
+	}
+
+	setInterval(animate, 10);
+
+	document.addEventListener("contextmenu", function (e) { 
+		e.preventDefault(); 
+	})
+
+	</script>
 </body>

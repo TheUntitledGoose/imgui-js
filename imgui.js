@@ -1,3 +1,5 @@
+export { ImGui }
+
 const c = document.getElementById("myCanvas");
 const ctx = c.getContext("2d");
 
@@ -17,7 +19,7 @@ const BUTTON_BACKGROUND = "#254370";
 
 const TAB_HEIGHT = 20;
 const GAP = 10;
-const BUTTON_SIZE = 20;
+export const BUTTON_SIZE = 20;
 
 const TRIG_OFFSET = 5;
 
@@ -60,9 +62,8 @@ class ImGui {
 		this.elements = [];
 
 		document.querySelector("canvas").addEventListener("mousedown", (e) => {
-			if (e.buttons == 1) {
-				this.checkClick(e.x, e.y, e);
-		
+			if (e.buttons == 1 && !this.hidden) this.checkClick(e.x, e.y, e);
+			if (e.buttons == 1) {		
 				if ( this.checkHide(e.x, e.y) ) {
 					this.hidden = !this.hidden;
 				}
@@ -87,7 +88,7 @@ class ImGui {
 
 	}
 
-	text(text, x, y) {
+	static text(text, x, y) {
     ctx.fillStyle = "white";
     ctx.font = "14px sans-serif";
     ctx.fillText(text, x, y);
@@ -135,8 +136,8 @@ class ImGui {
 		return button;
 	}
 
-	slider(min = 0, max = 100) {
-		var slider = new Slider(min, max, this.width)
+	slider(min = 0, max = 100, width = this.width, init = min) {
+		var slider = new Slider(min, max, width, init)
 		this.elements.push(slider);
 		return slider;
   }
@@ -196,7 +197,7 @@ class ImGui {
 			this.openTrig();
 		}
 		
-		this.text("ImGui JS", this.x + TRIG_OFFSET * 5, this.y + TRIG_OFFSET * 3);
+		ImGui.text("ImGui JS", this.x + TRIG_OFFSET * 5, this.y + TRIG_OFFSET * 3);
 
 		if ( this.checkHide(curX, curY) ) {
 			circ(this.x + TRIG_OFFSET * 2, this.y + 9, 8, `rgba(66, 149, 249, 0.5)`);
@@ -208,11 +209,12 @@ class ImGui {
 }
 
 class Slider {
-  constructor(min, max, width) {
+  constructor(min, max, width, init=min) {
     this.x;
     this.y;
+		
+		this.init = init;
 
-    this.slidex = 0;
 		this.state = 0;
 
     this.min = min;
@@ -224,10 +226,20 @@ class Slider {
     this.x = x;
     this.y = y;
 
-    if( !this.slidex ) this.slidex = BUTTON_SIZE/8;
+    // if( !this.slidex ) this.slidex = BUTTON_SIZE/8;
+		
+		this.slideMin = this.x+7*BUTTON_SIZE/8;
+		this.slideMax = (2*this.width/3) + this.x;
+		
+		if ( !this.slidex && this.init != this.min ) {
+			// console.log((this.x+((this.init/this.max)*(this.slideMax+this.slideMin))-BUTTON_SIZE/8))
+			// console.log((this.slideMax-this.x-(4*(BUTTON_SIZE/5))))
 
-    this.slideMin = this.x+7*BUTTON_SIZE/8;
-    this.slideMax = (2*this.width/3) + this.x;
+			this.slidex = (this.init/this.max)*(this.slideMax-this.slideMin);
+
+		} else if (!this.slidex) {
+			this.slidex = BUTTON_SIZE/8;
+		}
 
 		
     if ( this.checkClr(curX, curY) ) {
@@ -238,12 +250,13 @@ class Slider {
 
 		rect(this.slidex + x, y+BUTTON_SIZE/8, 3*BUTTON_SIZE/5, 6*BUTTON_SIZE/8, INTERACTABLE_SELECT);	
 
-    imgui.text(
-        ((this.slidex-BUTTON_SIZE/8)/(this.slideMax-this.x-(4*(BUTTON_SIZE/5)))*this.max+this.min)
+		var number = ((this.slidex-BUTTON_SIZE/8)/(this.slideMax-this.x-(4*(BUTTON_SIZE/5)))*this.max);
+    ImGui.text(
+        number
         .toFixed(0),
     x + (this.width/3)-15, this.y+3*BUTTON_SIZE/4);
 
-		this.state = Math.round((this.slidex-BUTTON_SIZE/8)/(this.slideMax-this.x-(4*(BUTTON_SIZE/5)))*this.max+this.min);
+		this.state = number.toFixed(0);
 
   }
 
@@ -262,10 +275,11 @@ class Slider {
 			between(x, this.x, this.slideMax ) &&
 			between(y, this.y, this.y + BUTTON_SIZE * 1.5)
 		) {
+			// console.log(Math.floor(this.slideMax),x)
       this.slidex = 
       Math.min( 
-        Math.max(x, this.slideMin),
-        this.slideMax 
+        Math.max(x, Math.floor(this.slideMin)-.5),
+        this.slideMax
       ) - 3*BUTTON_SIZE/5-2-this.x;
 
 			return true;
@@ -313,7 +327,7 @@ class Button {
 		
 		var newX = x + BUTTON_SIZE * 4 + GAP;
 		var newY = y + 5 + BUTTON_SIZE / 2;
-		imgui.text(this.text, 
+		ImGui.text(this.text, 
 			x + GAP, this.y+3*BUTTON_SIZE/4
 		)
 		
@@ -359,7 +373,7 @@ class Checkbox {
 		
 		var newX = x + BUTTON_SIZE + GAP;
 		var newY = y + 5 + BUTTON_SIZE / 2;
-		imgui.text(this.text, newX, newY)
+		ImGui.text(this.text, newX, newY)
 		
 		if (this.toggle) {
 			this.checkmark(x, y);
@@ -367,31 +381,32 @@ class Checkbox {
 	}
 }
 
-let imgui = new ImGui(200, 250, 400, 100);
-let checkbox = imgui.checkbox("Test", true);
-let slider = imgui.slider(0, 100);
-let btn = imgui.button("this is a very long text", true);
+// let imgui = new ImGui(200, 250, 400, 100);
+// let checkbox = imgui.checkbox("Test", true);
+// let slider = imgui.slider(0, 100);
+// let btn = imgui.button("this is a very long text", true);
 
-// var imgui2 = new ImGui(500, 850, 400, 100);
+// // var imgui2 = new ImGui(500, 850, 400, 100);
 
-imgui.init();
-// imgui2.init();
+// imgui.init();
+// // imgui2.init();
 
-function animate() {
-	ctx.clearRect(0, 0, c.width, c.height);
+// function animate() {
+// 	ctx.clearRect(0, 0, c.width, c.height);
 
-	imgui.draw();
-	// imgui2.draw();
+// 	imgui.draw();
+// 	// imgui2.draw();
 
-	if (btn.state) {
-		console.log("clicked")
-		console.log(slider.state)
-	}
+// 	if (btn.state) {
+// 		console.log("clicked")
+// 		console.log(slider.state)
+// 		console.log(checkbox.toggle)
+// 	}
 
-}
+// }
 
-setInterval(animate, 10);
+// setInterval(animate, 10);
 
-document.addEventListener("contextmenu", function (e) { 
-	e.preventDefault(); 
-})
+// document.addEventListener("contextmenu", function (e) { 
+// 	e.preventDefault(); 
+// })
