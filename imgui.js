@@ -237,7 +237,7 @@ class Slider {
 			// console.log((this.slideMax-this.x-(4*(BUTTON_SIZE/5))))
 
 			// this.slidex = (this.init/(this.max+this.min))*(this.slideMax-this.slideMin);
-			console.log(this.init, this.min, this.max)
+			// console.log(this.init, this.min, this.max)
 			// console.log((Math.abs(this.max) + Math.abs(this.min)))
 			// console.log(this.width)
 			
@@ -257,9 +257,9 @@ class Slider {
 				(this.width-BUTTON_SIZE)
 			);
 			
-			console.log(this.x, this.slidex+this.x, ((this.slidex)/(this.max-BUTTON_SIZE*4)*this.slideMax))
-			console.log(this.slidex, this.width)
-			console.log("---------------")
+			// console.log(this.x, this.slidex+this.x, ((this.slidex)/(this.max-BUTTON_SIZE*4)*this.slideMax))
+			// console.log(this.slidex, this.width)
+			// console.log("---------------")
 
 		} else if (!this.slidex) {
 			this.slidex = BUTTON_SIZE/8;
