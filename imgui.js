@@ -85,6 +85,8 @@ class ImGui {
 			// offset = origin - mouse
 			// draw from mouse position using offset
 
+			curX = e.x;
+			curY = e.y;
 			if (e.buttons == 1 && this.moving) {
 				// this.update(this.x + e.movementX, this.y + e.movementY);
 				this.update(e.x + this.offsetX, e.y + this.offsetY);
@@ -216,7 +218,12 @@ class ImGui {
 
 	}
 
-	move() {}
+	refresh() {
+		// toggled refresh for all elements
+		for (var i = 0; i < this.elements.length; i++) {
+			this.elements[i].refresh();
+		}
+	}
 }
 
 class Slider {
@@ -335,6 +342,16 @@ class Slider {
 		this.validClick = false;
 		return false;
   }
+
+	refresh() {
+		// from state, refresh slider
+		this.slidex = 
+			(this.state-this.min)
+			/
+			(Math.abs(this.max) - Math.abs(this.min))
+			*
+			(this.width-BUTTON_SIZE)
+	}
 }
 
 class Button {
@@ -342,6 +359,9 @@ class Button {
 		this.x = 0;
 		this.y = 0;
 		this.text = text;
+		this.width = ctx.measureText(this.text).width;
+		
+		this.color = BUTTON_BACKGROUND;
 
 		document.querySelector("canvas").addEventListener("mousedown", (e) => {
 
@@ -354,24 +374,43 @@ class Button {
 	}
 
 	check(x, y, e) {
+		// console.log(x,y)
+		// this.color based on if click or if on button
+
 		if (
 			between(x, this.x + GAP/2, this.x + ctx.measureText(this.text).width + GAP * 3) &&
-			between(y, this.y + GAP/2, this.y + BUTTON_SIZE * 1.5) &&
-      (!e || ((e.movementX == 0 && e.movementY == 0) && e.type == "mousedown"))
+			between(y, this.y + GAP/2, this.y + BUTTON_SIZE * 1.5) 
 		) {
+			if (!e || ((e.movementX == 0 && e.movementY == 0) && e.type == "mousedown")){
+				this.color = INTERACTABLE_SELECT;
+			}
 			return true;
 		}
 		return false;
 	}
 
+	checkClr(x, y) {
+		// console.log(x,y)
+    if (
+			between(x, this.x, (this.x + this.width) ) &&
+			between(y, this.y+7, this.y + BUTTON_SIZE * 1.35)
+		) {
+			if (this.color != INTERACTABLE_SELECT) this.color = INTERACTABLE_SELECT_MORE;
+			else this.color = INTERACTABLE_SELECT_MORE
+			return true;
+    }
+		return false;
+  }
+
 	draw(x, y) {
 		this.x = x;
 		this.y = y;
+		this.width = ctx.measureText(this.text).width;
 
-		if ( this.check(curX, curY) ) {
-			rect(x, y, ctx.measureText(this.text).width + GAP * 2, BUTTON_SIZE, INTERACTABLE_SELECT);
+		if ( this.checkClr(curX, curY) ) {
+			rect(x, y, this.width + GAP * 2, BUTTON_SIZE, this.color);
 		} else {
-			rect(x, y, ctx.measureText(this.text).width + GAP * 2, BUTTON_SIZE, BUTTON_BACKGROUND);
+			rect(x, y, this.width + GAP * 2, BUTTON_SIZE, BUTTON_BACKGROUND);
 		}
 		
 		var newX = x + BUTTON_SIZE * 4 + GAP;
@@ -379,8 +418,10 @@ class Button {
 		ImGui.text(this.text, 
 			x + GAP, this.y+3*BUTTON_SIZE/4
 		)
-		
+	}
 
+	refresh() {
+		// do nothing, automatically will refresh on next redraw
 	}
 }
 
@@ -427,6 +468,10 @@ class Checkbox {
 		if (this.toggle) {
 			this.checkmark(x, y);
 		}
+	}
+
+	refresh() {
+		// do nothing, automatically will refresh on next redraw
 	}
 }
 
