@@ -265,7 +265,7 @@ class Slider {
 			this.slidex = (
 				(this.init-this.min)
 				/
-				(Math.abs(this.max))
+				(Math.abs(this.max) - Math.abs(this.min))
 				*
 				(this.width-BUTTON_SIZE)
 			);
