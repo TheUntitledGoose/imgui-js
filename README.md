@@ -10,7 +10,7 @@ But ooh it did.
 ## Does it work?
 Short answer, yes? It's really simple to use, literally a few lines to get it to show, but the spaghetti code is bound to break.
 
-### Quick setup
+# Quick setup
 Git clone the repo
 
 ```js
@@ -22,7 +22,7 @@ const ctx = c.getContext("2d");
 let imgui = new ImGui(200, 250, 400, 100);
 let checkbox = imgui.checkbox("Test", true);
 let slider = imgui.slider(0, 100);
-let btn = imgui.button("An example of a long textbox", true);
+let btn = imgui.button("An example of a long text in a button", true);
 
 imgui.init();
 
@@ -40,6 +40,15 @@ function animate() {
 
 setInterval(animate, 10);
 ```
+
+## Current options 
+### (option = default)
+* *ImGui*: (x = 150, y = 200, width = 400, height = 500)
+* *Sliders*: (min = 0, max = 100, width = 2*this.width/3, init = min)
+* *Button*: (text = "Placeholder")
+* *Checkboxes*: (text = "Placeholder", toggle = false)
+
+To access the *states* of the elements, just do element.*state*.
 
 # TO DO
 * ~~Sliders~~
