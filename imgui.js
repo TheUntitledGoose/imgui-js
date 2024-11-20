@@ -191,6 +191,19 @@ class ImGui {
 	draw() {
 
 		var color = this.selected ? TAB_COLOR_SEL : TAB_COLOR_UNSEL
+		
+		// loop through all elements and get the longest text to decide width of overall gui.
+		let longest_text = ""
+		for (var i = 0; i < this.elements.length; i++) {
+			if (this.elements[i].text && this.elements[i].text.length >= longest_text.length) {
+				longest_text = this.elements[i].text;
+			}
+		}
+		if (longest_text != "") {
+			this.width = ctx.measureText(longest_text).width + 40
+		}
+
+
 		if (!this.hidden) {
 			rect(this.x, this.y, this.width, TAB_HEIGHT, color);
 			
@@ -475,32 +488,6 @@ class Checkbox {
 	}
 }
 
-// let imgui = new ImGui(200, 250, 400, 100);
-// let checkbox = imgui.checkbox("Test", true);
-// let slider = imgui.slider(0, 100);
-// let btn = imgui.button("this is a very long text", true);
-
-// // var imgui2 = new ImGui(500, 850, 400, 100);
-
-// imgui.init();
-// // imgui2.init();
-
-// function animate() {
-// 	ctx.clearRect(0, 0, c.width, c.height);
-
-// 	imgui.draw();
-// 	// imgui2.draw();
-
-// 	if (btn.state) {
-// 		console.log("clicked")
-// 		console.log(slider.state)
-// 		console.log(checkbox.toggle)
-// 	}
-
-// }
-
-// setInterval(animate, 10);
-
-// document.addEventListener("contextmenu", function (e) { 
-// 	e.preventDefault(); 
-// })
+document.addEventListener("contextmenu", function (e) { 
+  e.preventDefault(); 
+})
