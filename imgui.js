@@ -86,6 +86,10 @@ class ImGui {
 			}
 		});
 
+		document.querySelector("canvas").addEventListener("mouseup", (e) => {
+			this.checkClick(e.x, e.y, e);
+		});
+
 	}
 
 	static text(text, x, y) {
@@ -216,6 +220,7 @@ class Slider {
 		this.init = init;
 
 		this.state = 0;
+		this.validClick = false;
 
     this.min = min;
     this.max = max;
@@ -278,7 +283,7 @@ class Slider {
 
 		rect(this.slidex + x, y+BUTTON_SIZE/8, 3*BUTTON_SIZE/5, 6*BUTTON_SIZE/8, INTERACTABLE_SELECT);	
 
-		var number = ((this.slidex)/(this.slideMax-BUTTON_SIZE*4)*this.max);
+		var number = ( ((this.slidex-BUTTON_SIZE/8)/(this.width-BUTTON_SIZE*7/8)) *this.max );
     ImGui.text(
         number
         .toFixed(0),
@@ -290,8 +295,8 @@ class Slider {
 
 	checkClr(x, y) {
     if (
-			between(x, this.slidex + this.x + GAP, (this.slidex + this.x) + BUTTON_SIZE ) &&
-			between(y, this.y, this.y + BUTTON_SIZE * 1.5)
+			between(x, this.x, (this.x + this.width) ) &&
+			between(y, this.y+7, this.y + BUTTON_SIZE * 1.35)
 		) {
 			return true;
     }
@@ -299,19 +304,28 @@ class Slider {
   }
 
   check(x, y, e) {
+		// e.type = mousedown | mousemove
+		// on mousedown set this.validClick = true
+		// on mouseup set this.validClick = false
+		// only if this.validClick is true change slide
     if (
 			between(x, this.x, this.slideMax ) &&
 			between(y, this.y, this.y + BUTTON_SIZE * 1.5)
 		) {
-			// console.log(Math.floor(this.slideMax),x)
+			if (e.type == "mousedown") this.validClick = true;
+			if (e.type == "mouseup") return this.validClick = false;
+			
+			if (e.type == "mousemove" && !this.validClick) return;
+			
       this.slidex = 
       Math.min( 
-        Math.max(x, Math.floor(this.slideMin)),
+				Math.max(x, Math.floor(this.slideMin)),
         this.slideMax
       ) - 3*BUTTON_SIZE/5-2-this.x;
-
+			
 			return true;
     }
+		this.validClick = false;
 		return false;
   }
 }
