@@ -249,7 +249,8 @@ class Slider {
 			// console.log((this.slideMax-this.x-(4*(BUTTON_SIZE/5))))
 
 			// this.slidex = (this.init/(this.max+this.min))*(this.slideMax-this.slideMin);
-			// console.log(this.init, this.min, this.max)
+			console.log("---------------")
+			console.log(this.init, this.min, this.max)
 			// console.log((Math.abs(this.max) + Math.abs(this.min)))
 			// console.log(this.width)
 			
@@ -262,16 +263,16 @@ class Slider {
 			// );
 
 			this.slidex = (
-				(this.init)
+				(this.init-this.min)
 				/
-				(Math.abs(this.max) + Math.abs(this.min))
+				(Math.abs(this.max))
 				*
-				(this.width-BUTTON_SIZE+this.min*3)
+				(this.width-BUTTON_SIZE)
 			);
 			
-			// console.log(this.x, this.slidex+this.x, ((this.slidex)/(this.max-BUTTON_SIZE*4)*this.slideMax))
-			// console.log(this.slidex, this.width)
-			// console.log("---------------")
+			console.log(this.x, this.slidex+this.x, ((this.slidex)/(this.max-BUTTON_SIZE*4)*this.slideMax))
+			console.log(this.slidex, this.width)
+			console.log("---------------")
 
 		} else if (!this.slidex) {
 			this.slidex = BUTTON_SIZE/8;
@@ -290,10 +291,9 @@ class Slider {
 
 		rect(this.slidex + x, y+BUTTON_SIZE/8, 3*BUTTON_SIZE/5, 6*BUTTON_SIZE/8, INTERACTABLE_SELECT);	
 
-		var number = ( ((this.slidex)/(this.width-BUTTON_SIZE)) *this.max );
+		var number = ( ((this.slidex)/(this.width-BUTTON_SIZE)) *(this.max-this.min)+this.min );
     ImGui.text(
-        number
-        .toFixed(0),
+        number.toFixed(0),
     x + (this.width/2)-15, this.y+3*BUTTON_SIZE/4);
 
 		this.state = number.toFixed(0);
