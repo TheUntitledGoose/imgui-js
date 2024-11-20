@@ -71,16 +71,23 @@ class ImGui {
 		
 			if (this.checkMove(e.x, e.y)) {
 				this.moving = true;
+
+				this.offsetX = this.x - e.x;
+				this.offsetY = this.y - e.y;
 			} else {
 				this.moving = false;
 			}
 		});
 		
 		document.querySelector("canvas").addEventListener("mousemove", (e) => {
-			curX = e.x;
-			curY = e.y;
+			// get offset of cursor from origin
+			// instead of movementX/Y use offset from mouse
+			// offset = origin - mouse
+			// draw from mouse position using offset
+
 			if (e.buttons == 1 && this.moving) {
-				this.update(this.x + e.movementX, this.y + e.movementY);
+				// this.update(this.x + e.movementX, this.y + e.movementY);
+				this.update(e.x + this.offsetX, e.y + this.offsetY);
 			} else if (e.buttons == 1) {
 				this.checkClick(e.x, e.y, e);
 			}
@@ -100,11 +107,11 @@ class ImGui {
 
 	checkMove(x, y) {
 		var minX = this.x + TRIG_OFFSET * 5;
-		var minY = this.y - 2;
+		var minY = this.y + 4;
 		var maxX = this.x + 10 + this.width;
 		var maxY = this.y + TAB_HEIGHT * 1.5;
 
-		if (between(x, this.x, this.x + this.width) && between(y, this.y, this.y + this.height)) {
+		if (between(x, minX, maxX) && between(y, minY, maxY)) {
 			this.selected = true
 		} else this.selected = false
 		if (between(x, minX, maxX) && between(y, minY, maxY)) return true;
