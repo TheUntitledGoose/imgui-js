@@ -194,13 +194,26 @@ class ImGui {
 		
 		// loop through all elements and get the longest text to decide width of overall gui.
 		let longest_text = ""
+		let longest_width = 0
 		for (var i = 0; i < this.elements.length; i++) {
+			// loop through buttons (Do: text areas in the future) TODO: CHECKBOXES
 			if (this.elements[i].text && this.elements[i].text.length >= longest_text.length) {
 				longest_text = this.elements[i].text;
 			}
+			// loop through all sliders
+			if (this.elements[i].width > this.width) {
+				longest_width = this.elements[i].width
+			}
 		}
-		if (longest_text != "") {
-			this.width = ctx.measureText(longest_text).width + 40
+		const longest_text_width = ctx.measureText(longest_text).width
+
+		if (
+			(longest_text != "" && longest_text_width > this.width && longest_text_width > longest_width)
+		) {
+			this.width = longest_text_width + 40
+		}
+		else if (longest_width > this.width){
+			this.width = longest_text_width + 40
 		}
 
 
