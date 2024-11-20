@@ -316,7 +316,7 @@ class Slider {
 			if (e.type == "mouseup") return this.validClick = false;
 			
 			if (e.type == "mousemove" && !this.validClick) return;
-			
+
       this.slidex = 
       Math.min( 
 				Math.max(x, Math.floor(this.slideMin)),
@@ -350,7 +350,7 @@ class Button {
 		if (
 			between(x, this.x + GAP/2, this.x + ctx.measureText(this.text).width + GAP * 3) &&
 			between(y, this.y + GAP/2, this.y + BUTTON_SIZE * 1.5) &&
-      (!e || (e.movementX == 0 && e.movementY == 0))
+      (!e || ((e.movementX == 0 && e.movementY == 0) && e.type == "mousedown"))
 		) {
 			return true;
 		}
@@ -399,7 +399,7 @@ class Checkbox {
 		if (
 			between(x, this.x, this.x + BUTTON_SIZE * 1.5) &&
 			between(y, this.y, this.y + BUTTON_SIZE * 1.5) &&
-      (!e || (e.movementX == 0 && e.movementY == 0))
+      ((!e || (e.movementX == 0 && e.movementY == 0)) && e.type == "mousedown")
 		) {
 			this.toggle = !this.toggle;
 			return true;
