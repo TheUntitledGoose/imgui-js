@@ -37,6 +37,19 @@ function rect(x, y, w, h, c) {
 	ctx.fill();
 }
 
+function round_rect(x, y, w, h, c, r) {
+	ctx.beginPath();
+	ctx.fillStyle = c;
+	ctx.roundRect(x, y, w, h, r);
+	ctx.fill();
+}
+
+function clip_rect(x, y, w, h) {
+	ctx.beginPath();
+	ctx.rect(x, y, w, h);
+	ctx.clip();
+}
+
 function circ(x, y, r, c) {
 	ctx.beginPath();
 	ctx.fillStyle = c;
@@ -101,6 +114,10 @@ class ImGui {
 
 	}
 
+	static SliderFlags = {
+		"Float" : true
+	}
+
 	static text(text, x, y) {
     ctx.fillStyle = "white";
     ctx.font = "14px sans-serif";
@@ -149,13 +166,13 @@ class ImGui {
 		return button;
 	}
 
-	slider(min = 0, max = 100, width = 2*this.width/3, init = min) {
-		var slider = new Slider(min, max, width, init)
+	slider(min = 0, max = 100, width = 2*this.width/3, init = min, flags) {
+		var slider = new Slider(min, max, width, init, {...flags})
 		this.elements.push(slider);
 		return slider;
   }
 
-	number(min = 0, max = 100) {}
+	number(min = 0, max = 100, init=min) {}
 
 	update(x, y) {
 		this.x = x;
@@ -164,6 +181,37 @@ class ImGui {
 
 	init() {
 		this.height = Math.max(this.height, TAB_HEIGHT + GAP + (this.elements.length * (BUTTON_SIZE + GAP)));
+
+		// loop through all elements and get the longest text to decide width of overall gui.
+		let longest_text = ""
+		let farthest_text = GAP
+		let longest_width = GAP
+		for (var i = 0; i < this.elements.length; i++) {
+			// loop through buttons (Do: text areas in the future) TODO: CHECKBOXES
+			if (this.elements[i].text && this.elements[i].text.length >= longest_text.length) {
+				longest_text = this.elements[i].text;
+				farthest_text = this.elements[i].text_x > farthest_text ? this.elements[i].text_x : farthest_text;
+			}
+			// loop through all sliders
+			if (this.elements[i].width >= this.width || this.elements[i].width > longest_width) {
+				longest_width = this.elements[i].width
+			}
+		}
+		const longest_text_width = ctx.measureText(longest_text).width
+		
+		console.log(farthest_text, longest_text_width)
+
+		// console.log(longest_text, longest_text_width+farthest_text)
+		if (
+			(longest_text != "" 
+			&& (longest_text_width >= this.width 
+			|| longest_text_width+farthest_text >= longest_width))
+		) {
+			this.width = longest_text_width + GAP*2 + farthest_text + longest_width;
+		}
+		else if (longest_width > this.width){
+			this.width = longest_text_width + GAP*2
+		}
 	}
 
 	closeTrig() {
@@ -191,47 +239,29 @@ class ImGui {
 	draw() {
 
 		var color = this.selected ? TAB_COLOR_SEL : TAB_COLOR_UNSEL
-		
-		// loop through all elements and get the longest text to decide width of overall gui.
-		let longest_text = ""
-		let longest_width = 0
-		for (var i = 0; i < this.elements.length; i++) {
-			// loop through buttons (Do: text areas in the future) TODO: CHECKBOXES
-			if (this.elements[i].text && this.elements[i].text.length >= longest_text.length) {
-				longest_text = this.elements[i].text;
-			}
-			// loop through all sliders
-			if (this.elements[i].width > this.width) {
-				longest_width = this.elements[i].width
-			}
-		}
-		const longest_text_width = ctx.measureText(longest_text).width
-
-		if (
-			(longest_text != "" && longest_text_width > this.width && longest_text_width > longest_width)
-		) {
-			this.width = longest_text_width + 40
-		}
-		else if (longest_width > this.width){
-			this.width = longest_text_width + 40
-		}
-
 
 		if (!this.hidden) {
-			rect(this.x, this.y, this.width, TAB_HEIGHT, color);
-			
+			// rect(this.x, this.y, this.width, TAB_HEIGHT, color);
+			ctx.save();
+			clip_rect(this.x, this.y, this.width, this.height+TAB_HEIGHT)
+
+			round_rect(this.x, this.y, this.width, TAB_HEIGHT, color, [5,5,0,0]);
+		
 			this.closeTrig();
 			
-			rect(this.x, this.y + TAB_HEIGHT, this.width, this.height-TAB_HEIGHT, BACKGROUND);
+			round_rect(this.x, this.y + TAB_HEIGHT, this.width, this.height-TAB_HEIGHT, BACKGROUND, [0,0,5,5]);
 			
+
 			for (var i = 0; i < this.elements.length; i++) {
 				var x = this.x + 10;
 				var y = this.y + TAB_HEIGHT + GAP + i * GAP * 3;
 				this.elements[i].draw(x, y);
 			}
 			
+			ctx.restore();
 		} else {
-			rect(this.x, this.y, this.width, TAB_HEIGHT, "#000");
+			// rect(this.x, this.y, this.width, TAB_HEIGHT, "#000");
+			round_rect(this.x, this.y, this.width, TAB_HEIGHT, "#000", 5);
 			
 			this.openTrig();
 		}
@@ -253,7 +283,7 @@ class ImGui {
 }
 
 class Slider {
-  constructor(min, max, width, init=min) {
+  constructor(min, max, width, init=min, options) {
     this.x;
     this.y;
 		
@@ -261,6 +291,11 @@ class Slider {
 
 		this.state = 0;
 		this.validClick = false;
+
+		this.float = options.float ? options.float : false;
+
+		this.text = options.text ? options.text : "";
+		this.text_x = width + GAP * 2;
 
     this.min = min;
     this.max = max;
@@ -278,22 +313,9 @@ class Slider {
 		this.slideMax = (this.width) + this.x;
 		
 		if ( !this.slidex && this.init != this.min ) {
-			// console.log((this.x+((this.init/this.max)*(this.slideMax+this.slideMin))-BUTTON_SIZE/8))
-			// console.log((this.slideMax-this.x-(4*(BUTTON_SIZE/5))))
-
 			// this.slidex = (this.init/(this.max+this.min))*(this.slideMax-this.slideMin);
-			console.log("---------------")
-			console.log(this.init, this.min, this.max)
-			// console.log((Math.abs(this.max) + Math.abs(this.min)))
-			// console.log(this.width)
-			
-			// this.slidex = (
-			// 	(this.init-this.min)
-			// 	/
-			// 	(Math.abs(this.max) - Math.abs(this.min))
-			// 	*
-			// 	this.width+BUTTON_SIZE*3/5
-			// );
+			// console.log("---------------")
+			// console.log(this.init, this.min, this.max)
 
 			this.slidex = (
 				(this.init-this.min)
@@ -303,9 +325,9 @@ class Slider {
 				(this.width-BUTTON_SIZE)
 			);
 			
-			console.log(this.x, this.slidex+this.x, ((this.slidex)/(this.max-BUTTON_SIZE*4)*this.slideMax))
-			console.log(this.slidex, this.width)
-			console.log("---------------")
+			// console.log(this.x, this.slidex+this.x, ((this.slidex)/(this.max-BUTTON_SIZE*4)*this.slideMax))
+			// console.log(this.slidex, this.width)
+			// console.log("---------------")
 
 		} else if (!this.slidex) {
 			this.slidex = BUTTON_SIZE/8;
@@ -324,12 +346,29 @@ class Slider {
 
 		rect(this.slidex + x, y+BUTTON_SIZE/8, 3*BUTTON_SIZE/5, 6*BUTTON_SIZE/8, INTERACTABLE_SELECT);	
 
-		var number = ( ((this.slidex)/(this.width-BUTTON_SIZE)) *(this.max-this.min)+this.min );
+		let number_percent = (this.slidex)/(this.width-BUTTON_SIZE)
+		if (number_percent >= 1) number_percent = 1;
+		if (number_percent <= 0.0125) number_percent = 0;
+		
+		const number = ( (number_percent) *(this.max-this.min)+this.min );
+		
+		const float_round = this.float == true ? 3 : 0;
+
+		// console.log(number,this.float, float_round,parseFloat(number).toFixed(float_round) )
+
     ImGui.text(
-        number.toFixed(0),
+        parseFloat(number).toFixed(float_round),
     x + (this.width/2)-15, this.y+3*BUTTON_SIZE/4);
 
-		this.state = number.toFixed(0);
+		this.state = number.toFixed(float_round);
+
+		if (this.text != "") {
+			ImGui.text(
+				this.text,
+				this.x+this.width+GAP,
+				this.y+BUTTON_SIZE/4*3
+			);
+		}
 
   }
 
@@ -418,8 +457,8 @@ class Button {
 	checkClr(x, y) {
 		// console.log(x,y)
     if (
-			between(x, this.x, (this.x + this.width) ) &&
-			between(y, this.y+7, this.y + BUTTON_SIZE * 1.35)
+			between(x, this.x + GAP/2, this.x + ctx.measureText(this.text).width + GAP * 3 ) &&
+			between(y, this.y + GAP/2, this.y + BUTTON_SIZE * 1.5)
 		) {
 			if (this.color != INTERACTABLE_SELECT) this.color = INTERACTABLE_SELECT_MORE;
 			else this.color = INTERACTABLE_SELECT_MORE
