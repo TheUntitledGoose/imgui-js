@@ -140,7 +140,7 @@ class ImGui {
 	checkHide(x, y) {
 		if (
 			between(x, this.x, this.x + TRIG_OFFSET + 20) &&
-			between(y, this.y + TRIG_OFFSET * 2, this.y + TRIG_OFFSET + 20)
+			between(y, this.y, this.y + TRIG_OFFSET + 20)
 		) {
 			return true;
 		} else {
@@ -444,7 +444,7 @@ class Button {
 
 		if (
 			between(x, this.x + GAP/2, this.x + ctx.measureText(this.text).width + GAP * 3) &&
-			between(y, this.y + GAP/2, this.y + BUTTON_SIZE * 1.5) 
+			between(y, this.y + GAP/2, this.y + BUTTON_SIZE) 
 		) {
 			if (!e || ((e.movementX == 0 && e.movementY == 0) && e.type == "mousedown")){
 				this.color = INTERACTABLE_SELECT;
@@ -458,7 +458,7 @@ class Button {
 		// console.log(x,y)
     if (
 			between(x, this.x + GAP/2, this.x + ctx.measureText(this.text).width + GAP * 3 ) &&
-			between(y, this.y + GAP/2, this.y + BUTTON_SIZE * 1.5)
+			between(y, this.y + GAP/2, this.y + BUTTON_SIZE)
 		) {
 			if (this.color != INTERACTABLE_SELECT) this.color = INTERACTABLE_SELECT_MORE;
 			else this.color = INTERACTABLE_SELECT_MORE
@@ -495,7 +495,7 @@ class Checkbox {
 		this.x = 0;
 		this.y = 0;
 		this.text = text;
-		this.toggle = toggle;
+		this.state = toggle;
 	}
 
 	checkmark(x, y) {
@@ -514,7 +514,7 @@ class Checkbox {
 			between(y, this.y, this.y + BUTTON_SIZE * 1.5) &&
       ((!e || (e.movementX == 0 && e.movementY == 0)) && e.type == "mousedown")
 		) {
-			this.toggle = !this.toggle;
+			this.state = !this.state;
 			return true;
 		}
 		return false;
@@ -530,7 +530,7 @@ class Checkbox {
 		var newY = y + 5 + BUTTON_SIZE / 2;
 		ImGui.text(this.text, newX, newY)
 		
-		if (this.toggle) {
+		if (this.state) {
 			this.checkmark(x, y);
 		}
 	}
