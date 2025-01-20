@@ -80,12 +80,13 @@ class ImGui {
 		// ctx_ passed context
 		this.c = canvas;
 		c = canvas;
-		c.height = windowHeight;
-		c.width = windowWidth;
+		// c.height = windowHeight;
+		// c.width = windowWidth;
 
-		ctx = this.c.getContext('2d');
+		this.ctx = this.c.getContext('2d');
+		ctx = this.ctx;
 
-		document.querySelector("canvas").addEventListener("mousedown", (e) => {
+		this.ctx.addEventListener("mousedown", (e) => {
 			if (e.buttons == 1 && !this.hidden) this.checkClick(e.x, e.y, e);
 			if (e.buttons == 1) {		
 				if ( this.checkHide(e.x, e.y) ) {
@@ -103,7 +104,7 @@ class ImGui {
 			}
 		});
 		
-		document.querySelector("canvas").addEventListener("mousemove", (e) => {
+		this.ctx.addEventListener("mousemove", (e) => {
 			// get offset of cursor from origin
 			// instead of movementX/Y use offset from mouse
 			// offset = origin - mouse
@@ -119,7 +120,7 @@ class ImGui {
 			}
 		});
 
-		document.querySelector("canvas").addEventListener("mouseup", (e) => {
+		this.ctx.addEventListener("mouseup", (e) => {
 			this.checkClick(e.x, e.y, e);
 		});
 
