@@ -423,7 +423,7 @@ class Slider {
 
 	checkClr(x, y) {
     if (
-			between(x, this.x, (this.x + this.width) ) &&
+			between(x, this.x + GAP, (this.x + this.width) ) &&
 			between(y, this.y+7, this.y + BUTTON_SIZE * 1.35)
 		) {
 			return true;
@@ -437,8 +437,8 @@ class Slider {
 		// on mouseup set this.validClick = false
 		// only if this.validClick is true change slide
     if (
-			between(x, this.x, this.slideMax ) &&
-			between(y, this.y, this.y + BUTTON_SIZE * 1.35)
+			between(x, this.x + GAP, this.slideMax ) &&
+			between(y, this.y+7, this.y + BUTTON_SIZE * 1.35)
 		) {
 			if (e.type == "mousedown") this.validClick = true;
 			if (e.type == "mouseup") return this.validClick = false;
@@ -492,8 +492,8 @@ class Button {
 		// this.color based on if click or if on button
 
 		if (
-			between(x, this.x + GAP/2, this.x + ctx.measureText(this.text).width + GAP * 3) &&
-			between(y, this.y + GAP/2, this.y + BUTTON_SIZE) 
+			between(x, this.x + GAP, this.x + ctx.measureText(this.text).width + GAP * 3) &&
+			between(y, this.y + GAP, this.y + BUTTON_SIZE * 1.5) 
 		) {
 			if (!e || ((e.movementX == 0 && e.movementY == 0) && e.type == "mousedown")){
 				this.color = INTERACTABLE_SELECT;
@@ -506,8 +506,8 @@ class Button {
 	checkClr(x, y) {
 		// console.log(x,y)
     if (
-			between(x, this.x + GAP/2, this.x + ctx.measureText(this.text).width + GAP * 3 ) &&
-			between(y, this.y + GAP/2, this.y + BUTTON_SIZE)
+			between(x, this.x + GAP, this.x + ctx.measureText(this.text).width + GAP * 3 ) &&
+			between(y, this.y + GAP, this.y + BUTTON_SIZE * 1.5)
 		) {
 			if (this.color != INTERACTABLE_SELECT) this.color = INTERACTABLE_SELECT_MORE;
 			else this.color = INTERACTABLE_SELECT_MORE
@@ -559,8 +559,8 @@ class Checkbox {
 
 	check(x, y, e) {
 		if (
-			between(x, this.x, this.x + BUTTON_SIZE) &&
-			between(y, this.y, this.y + BUTTON_SIZE) &&
+			between(x, this.x + GAP, this.x + BUTTON_SIZE + GAP) &&
+			between(y, this.y + GAP, this.y + BUTTON_SIZE + GAP) &&
       ((!e || (e.movementX == 0 && e.movementY == 0)) && e.type == "mousedown")
 		) {
 			this.state = !this.state;

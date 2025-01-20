@@ -19,7 +19,7 @@
 	let windowHeight = window.innerHeight;
 	
 	let imgui = new ImGui(200, 250, 400, 100, c);
-	let checkbox = imgui.checkbox("Test", true);
+	let checkbox = imgui.checkbox("Rainbow mode", false);
 	let slider = imgui.slider(0, 100);
 	let btn = imgui.button("An example of a long text in a button", true);
 	// Text could be a single line...
@@ -35,6 +35,8 @@
 
 	imgui.init();
 	// imgui2.init();
+	let old_checkbox;
+	let rainbowInt;
 
 	function animate() {
 		ctx.clearRect(0, 0, c.width, c.height);
@@ -50,6 +52,25 @@
     	changing_text.color = "green"
 		}
 
+		let hue = 0
+		if (checkbox.state && !old_checkbox) {
+			console.log("Rainbow mode on")
+			rainbowInt = setInterval(function() {
+				// slowly change the color by going through the hue
+				if (slider.state != 0) {
+					hue += parseInt(slider.state); 
+				}
+				else {hue += 1;}
+				if (hue > 360) {
+					hue = 0; // reset the hue value when it reaches 360
+				}
+				changing_text.color = "hsl("+hue+",100%,50%)";
+			}, 50);
+		} else if (!checkbox.state && old_checkbox) {
+			console.log("Rainbow mode off")
+			clearInterval(rainbowInt);
+		}
+		old_checkbox = checkbox.state
 	}
 
 	setInterval(animate, 10);
