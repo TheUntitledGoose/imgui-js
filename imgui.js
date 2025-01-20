@@ -6,6 +6,7 @@ const ctx = c.getContext("2d");
 let windowWidth = window.innerWidth;
 let windowHeight = window.innerHeight;
 
+//---CONSTANTS---//
 const TAB_COLOR_SEL = "#29477d";
 // const TAB_COLOR_SEL = "#0d0d0d";
 // const TAB_COLOR_SEL = "#242424";
@@ -118,8 +119,8 @@ class ImGui {
 		"Float" : true
 	}
 
-	static text(text, x, y) {
-    ctx.fillStyle = "white";
+	static text(text, x, y, color = "white") {
+    ctx.fillStyle = color;
     ctx.font = "14px sans-serif";
     ctx.fillText(text, x, y);
   }
@@ -166,6 +167,12 @@ class ImGui {
 		return button;
 	}
 
+	staticText(text = "Placeholder", color = "white") {
+		var staticText = new StaticText(text, color);
+		this.elements.push(staticText);
+		return staticText;
+	}
+
 	slider(min = 0, max = 100, width = 2*this.width/3, init = min, flags) {
 		var slider = new Slider(min, max, width, init, {...flags})
 		this.elements.push(slider);
@@ -181,6 +188,14 @@ class ImGui {
 
 	init() {
 		this.height = Math.max(this.height, TAB_HEIGHT + GAP + (this.elements.length * (BUTTON_SIZE + GAP)));
+		// check all text elements for multi-line text and adjust height accordingly.
+		for (var i = 0; i < this.elements.length; i++) {
+			if (this.elements[i].text && this.elements[i].text.includes("\n")) {
+				let lines = this.elements[i].text.split("\n");
+				this.height += (lines.length - 1) * BUTTON_SIZE - GAP;
+			}
+		}
+
 
 		// loop through all elements and get the longest text to decide width of overall gui.
 		let longest_text = ""
@@ -537,6 +552,38 @@ class Checkbox {
 
 	refresh() {
 		// do nothing, automatically will refresh on next redraw
+	}
+}
+
+class StaticText {
+	constructor(text, color) {
+		this.x = 0;
+		this.y = 0;
+		this.text = text;
+		this.color = color
+	}
+
+	draw(x, y) {
+		this.x = x;
+		this.y = y;
+
+		// seperate the text by '\n' and draw each line on a new line
+		let lines = this.text.split('\n');
+		for(let i=0; i<lines.length; i++) {
+			// 14px is the height of the font used in ImGui.text()
+			// will make fonts changable in the future
+			ImGui.text(lines[i], x, y + 14 * (i + 1), this.color);
+			// y += 14; // move to the next line
+		}	
+		// ImGui.text(this.text, x, y+14, this.color);
+	}
+
+	check(x, y, e) {
+		return false;
+	}
+
+	refresh() {
+		// do nothing
 	}
 }
 
