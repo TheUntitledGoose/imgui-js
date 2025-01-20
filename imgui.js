@@ -86,7 +86,7 @@ class ImGui {
 		this.ctx = this.c.getContext('2d');
 		ctx = this.ctx;
 
-		this.ctx.addEventListener("mousedown", (e) => {
+		this.c.addEventListener("mousedown", (e) => {
 			if (e.buttons == 1 && !this.hidden) this.checkClick(e.x, e.y, e);
 			if (e.buttons == 1) {		
 				if ( this.checkHide(e.x, e.y) ) {
@@ -104,7 +104,7 @@ class ImGui {
 			}
 		});
 		
-		this.ctx.addEventListener("mousemove", (e) => {
+		this.c.addEventListener("mousemove", (e) => {
 			// get offset of cursor from origin
 			// instead of movementX/Y use offset from mouse
 			// offset = origin - mouse
@@ -120,7 +120,7 @@ class ImGui {
 			}
 		});
 
-		this.ctx.addEventListener("mouseup", (e) => {
+		this.c.addEventListener("mouseup", (e) => {
 			this.checkClick(e.x, e.y, e);
 		});
 
