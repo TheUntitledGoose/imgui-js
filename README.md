@@ -54,5 +54,7 @@ To access the *states* of the elements, just do element.*state*.
 * ~~Sliders~~
 * ~~Buttons~~
 * ~~Checkboxes~~
-* <u>Text</u> <= Right now
+* <u>Text</u> 
+* * ~~Static Text~~
+* * Dynamic Text <= Right now
 * Sub-Sections
