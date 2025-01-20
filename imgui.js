@@ -1,7 +1,9 @@
 export { ImGui }
 
-const c = document.getElementById("myCanvas");
-const ctx = c.getContext("2d");
+// const c = document.getElementById("myCanvas");
+// const ctx = c.getContext("2d");
+let c;
+let ctx;
 
 let windowWidth = window.innerWidth;
 let windowHeight = window.innerHeight;
@@ -28,8 +30,8 @@ const TRIG_OFFSET = 5;
 let curX = 0;
 let curY = 0;
 
-c.height = windowHeight;
-c.width = windowWidth;
+// c.height = windowHeight;
+// c.width = windowWidth;
 
 function rect(x, y, w, h, c) {
 	ctx.beginPath();
@@ -63,7 +65,7 @@ const between = (x, min, max) => {
 };
 
 class ImGui {
-	constructor(x = 150, y = 200, width = 400, height = 500) {
+	constructor(x = 150, y = 200, width = 400, height = 500, canvas) {
 		this.x = x;
 		this.y = y;
 		this.width = width;
@@ -74,6 +76,14 @@ class ImGui {
 		this.selected = true;
 
 		this.elements = [];
+
+		// ctx_ passed context
+		this.c = canvas;
+		c = canvas;
+		c.height = windowHeight;
+		c.width = windowWidth;
+
+		ctx = this.c.getContext('2d');
 
 		document.querySelector("canvas").addEventListener("mousedown", (e) => {
 			if (e.buttons == 1 && !this.hidden) this.checkClick(e.x, e.y, e);
