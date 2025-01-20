@@ -5,7 +5,7 @@
 </head>
 
 <body style='overflow: hidden;'>
-	<canvas id='myCanvas' width=1000 height=500></canvas>
+	<canvas id='myCanvas' width=1000 height=1000></canvas>
   <script src="imgui.js"></script>
 
 	<script type="module">
@@ -22,9 +22,14 @@
 	let checkbox = imgui.checkbox("Test", true);
 	let slider = imgui.slider(0, 100);
 	let btn = imgui.button("An example of a long text in a button", true);
-	let staticText = imgui.staticText("Test", "white");
-	let staticText_red = imgui.staticText("Test", "red");
-	let staticText_multiline = imgui.staticText("Line 1\nLine 2\nLine 3", "white");
+	// Text could be a single line...
+	imgui.staticText("A single line.");
+	// Or multiple lines...
+	imgui.staticText("Multiple\nlines\nof\ntext.");
+	// Or a different color...
+	imgui.staticText("A different color.", "red");
+	// You could change text via a click...
+	let changing_text = imgui.staticText("Change me! Click the button!", "yellow");
 
 	// var imgui2 = new ImGui(500, 850, 400, 100);
 
@@ -41,6 +46,8 @@
 			console.log("clicked")
 			console.log(slider.state)
 			console.log(checkbox.toggle)
+			changing_text.text = "Changed!"
+    	changing_text.color = "green"
 		}
 
 	}

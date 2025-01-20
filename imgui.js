@@ -213,7 +213,8 @@ class ImGui {
 		for (var i = 0; i < this.elements.length; i++) {
 			if (this.elements[i].text && this.elements[i].text.includes("\n")) {
 				let lines = this.elements[i].text.split("\n");
-				this.height += (lines.length - 1) * BUTTON_SIZE - GAP;
+				// Font size dependant
+				this.height += (lines.length - 1) * 14;
 			}
 		}
 
@@ -290,7 +291,19 @@ class ImGui {
 
 			for (var i = 0; i < this.elements.length; i++) {
 				var x = this.x + 10;
-				var y = this.y + TAB_HEIGHT + GAP + i * GAP * 3;
+				// var y = this.y + TAB_HEIGHT + GAP + i * GAP * 3;
+				var y = this.y + TAB_HEIGHT + GAP;
+				// start of y with previous element
+				if (i > 0) {
+					y += this.elements[i-1].y - this.y;
+				}
+				
+				// if multi-line text add more y offset for each line
+				if (i > 0 && this.elements[i-1].text.includes("\n")) {
+					// Once again, font size dependant.
+					y += 14 * (this.elements[i-1].text.split("\n").length - 1);
+				}
+
 				this.elements[i].draw(x, y);
 			}
 			
