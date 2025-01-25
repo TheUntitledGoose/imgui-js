@@ -2,6 +2,7 @@
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Micro+5+Charted&display=swap" rel="stylesheet">
+	<!-- <script type="module" src="https://cdn.jsdelivr.net/gh/TheUntitledGoose/imgui-js@main/imgui.js"></script> -->
 </head>
 
 <body style='overflow: hidden;'>
@@ -31,10 +32,9 @@
 	// You could change text via a click...
 	let changing_text = imgui.staticText("Change me! Click the button!", "yellow");
 
-	// var imgui2 = new ImGui(500, 850, 400, 100);
 
 	imgui.init();
-	// imgui2.init();
+
 	let old_checkbox;
 	let rainbowInt;
 
@@ -42,12 +42,12 @@
 		ctx.clearRect(0, 0, c.width, c.height);
 
 		imgui.draw();
-		// imgui2.draw();
 
 		if (btn.state) {
 			console.log("clicked")
 			console.log(slider.state)
 			console.log(checkbox.toggle)
+
 			changing_text.text = "Changed!"
     	changing_text.color = "green"
 		}
@@ -71,9 +71,14 @@
 			clearInterval(rainbowInt);
 		}
 		old_checkbox = checkbox.state
+
+		// Broken for now. Plans to fix
+		// requestAnimationFrame(animate)
 	}
 
 	setInterval(animate, 10);
+	// requestAnimationFrame(animate)
+
 
 	document.addEventListener("contextmenu", function (e) { 
 		e.preventDefault(); 

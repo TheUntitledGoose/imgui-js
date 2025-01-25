@@ -5,21 +5,32 @@ Decided to make this instead...
 
 Classic mistake of: "This won't take long..."
 
-But ooh it did.
-
 ## Does it work?
 Short answer, yes? It's really simple to use, literally a few lines to get it to show, but the spaghetti code is bound to break.
 
 # Quick setup
-Git clone the repo
+In the head of your HTML file, add this:
+```html
+<script type="module" src="https://cdn.jsdelivr.net/gh/TheUntitledGoose/imgui-js@main/imgui.js"></script>
+```
+ImGui will be available in the window object: `window.ImGui`, or you can just do `ImGui`.
+
+Alternatively, you can download the file and include it locally:
 
 ```js
 import { ImGui } from "./imgui.js"
+```
 
+## Example usage
+
+```js
 const c = document.getElementById("myCanvas");
 const ctx = c.getContext("2d");
 
+// Init ImGui. Canvas argument (c) is required.
 let imgui = new ImGui(200, 250, 400, 100, c);
+
+// Add some elements...
 let checkbox = imgui.checkbox("Test", true);
 let slider = imgui.slider(0, 100);
 let btn = imgui.button("An example of a long text in a button", true);
@@ -32,7 +43,7 @@ imgui.staticText("A different color.", "red");
 // You could change text via a click...
 let changing_text = imgui.staticText("Change me!", "blue");
 
-
+// Initialize the UI. This sets the height of the UI to fit all elements.
 imgui.init();
 
 function animate() {
@@ -41,15 +52,16 @@ function animate() {
   imgui.draw();
 
   if (btn.state) {
-    console.log("clicked")
-    console.log(slider.state)
-    console.log(checkbox.toggle)
-    changing_text.text = "Changed!"
-    changing_text.color = "green"
+    console.log("clicked");
+    console.log(slider.state);
+    console.log(checkbox.toggle);
+    changing_text.text = "Changed!";
+    changing_text.color = "green";
   }
+
 }
 
-setInterval(animate, 10);
+setInterval(animate, 10)
 ```
 
 ## Current options 

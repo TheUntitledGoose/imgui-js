@@ -69,6 +69,7 @@ class ImGui {
 		this.x = x;
 		this.y = y;
 		this.width = width;
+		this.init_height = height;
 		this.height = height;
 
 		this.moving = false;
@@ -208,7 +209,7 @@ class ImGui {
 	}
 
 	init() {
-		this.height = Math.max(this.height, TAB_HEIGHT + GAP + (this.elements.length * (BUTTON_SIZE + GAP)));
+		this.height = Math.max(this.init_height, TAB_HEIGHT + GAP + (this.elements.length * (BUTTON_SIZE + GAP)));
 		// check all text elements for multi-line text and adjust height accordingly.
 		for (var i = 0; i < this.elements.length; i++) {
 			if (this.elements[i].text && this.elements[i].text.includes("\n")) {
