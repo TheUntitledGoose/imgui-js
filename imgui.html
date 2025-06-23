@@ -21,7 +21,8 @@
 	
 	let imgui = new ImGui(200, 250, 400, 100, c);
 	let checkbox = imgui.checkbox("Rainbow mode", false);
-	let slider = imgui.slider(0, 100);
+	let slider = imgui.slider(0, 1_000_000, undefined, 500_000);
+	let slider_with_text = imgui.slider(0, 1_000, undefined, 10, {text:"Slider with text"});
 	let btn = imgui.button("An example of a long text in a button", true);
 	// Text could be a single line...
 	imgui.staticText("A single line.");
@@ -29,6 +30,10 @@
 	imgui.staticText("Multiple\nlines\nof\ntext.");
 	// Or a different color...
 	imgui.staticText("A different color.", "red");
+	// Or centered text...
+	imgui.staticText("Centered!", undefined, true);
+	// Or centered text WITH COLORS....
+	imgui.staticText("Fancy center!", "gold", true);
 	// You could change text via a click...
 	let changing_text = imgui.staticText("Change me! Click the button!", "yellow");
 
@@ -46,7 +51,7 @@
 		if (btn.state) {
 			console.log("clicked")
 			console.log(slider.state)
-			console.log(checkbox.toggle)
+			console.log(checkbox.state)
 
 			changing_text.text = "Changed!"
     	changing_text.color = "green"
@@ -73,16 +78,11 @@
 		old_checkbox = checkbox.state
 
 		// Broken for now. Plans to fix
-		// requestAnimationFrame(animate)
+		requestAnimationFrame(animate)
 	}
 
-	setInterval(animate, 10);
-	// requestAnimationFrame(animate)
-
-
-	document.addEventListener("contextmenu", function (e) { 
-		e.preventDefault(); 
-	})
+	// setInterval(animate, 10);
+	requestAnimationFrame(animate)
 
 	</script>
 </body>

@@ -54,10 +54,12 @@ function clip_rect(x, y, w, h) {
 }
 
 function circ(x, y, r, c) {
+	var f = ctx.fillStyle;
 	ctx.beginPath();
 	ctx.fillStyle = c;
 	ctx.arc(x, y, r, 0, 2 * Math.PI);
 	ctx.fill();
+	ctx.fillStyle = f;
 }
 
 const between = (x, min, max) => {
@@ -71,6 +73,7 @@ class ImGui {
 		this.width = width;
 		this.init_height = height;
 		this.height = height;
+		this.title = "ImGui JS"
 
 		this.moving = false;
 		this.hidden = false;
@@ -88,7 +91,7 @@ class ImGui {
 		ctx = this.ctx;
 
 		this.c.addEventListener("mousedown", (e) => {
-			if (e.buttons == 1 && !this.hidden) this.checkClick(e.x, e.y, e);
+			if ((e.buttons == 1 || e.buttons == 2) && !this.hidden) this.checkClick(e.x, e.y, e);
 			if (e.buttons == 1) {		
 				if ( this.checkHide(e.x, e.y) ) {
 					this.hidden = !this.hidden;
@@ -132,9 +135,11 @@ class ImGui {
 	}
 
 	static text(text, x, y, color = "white") {
+		const f = ctx.fillStyle;
     ctx.fillStyle = color;
     ctx.font = "14px sans-serif";
     ctx.fillText(text, x, y);
+		ctx.fillStyle = f;
   }
 
 	checkMove(x, y) {
@@ -177,6 +182,16 @@ class ImGui {
 		return false;
 	}
 
+	checkBounding(x, y) {
+		var minX = this.x;
+		var minY = this.y;
+		var maxX = this.x + this.width;
+		var maxY = this.y + this.height;
+
+		if (between(x, minX, maxX) && between(y, minY, maxY)) return true;
+		return false;
+	}
+
 	checkbox(text = "Placeholder", toggle = false) {
 		var checkbox = new Checkbox(text, toggle);
 		this.elements.push(checkbox);
@@ -189,13 +204,13 @@ class ImGui {
 		return button;
 	}
 
-	staticText(text = "Placeholder", color = "white") {
-		var staticText = new StaticText(text, color);
+	staticText(text = "Placeholder", color = "white", center = false) {
+		var staticText = new StaticText(text, color, center);
 		this.elements.push(staticText);
 		return staticText;
 	}
 
-	slider(min = 0, max = 100, width = 2*this.width/3, init = min, flags) {
+	slider(min = 0, max = 100, width = this.width, init = min, flags) {
 		var slider = new Slider(min, max, width, init, {...flags})
 		this.elements.push(slider);
 		return slider;
@@ -237,7 +252,7 @@ class ImGui {
 		}
 		const longest_text_width = ctx.measureText(longest_text).width
 		
-		console.log(farthest_text, longest_text_width)
+		// console.log(farthest_text, longest_text_width)
 
 		// console.log(longest_text, longest_text_width+farthest_text)
 		if (
@@ -245,10 +260,10 @@ class ImGui {
 			&& (longest_text_width >= this.width 
 			|| longest_text_width+farthest_text >= longest_width))
 		) {
-			this.width = longest_text_width + GAP*2 + farthest_text + longest_width;
+			// this.width = longest_text_width + GAP*2 + farthest_text + longest_width;
 		}
 		else if (longest_width > this.width){
-			this.width = longest_text_width + GAP*2
+			// this.width = longest_text_width + GAP*2
 		}
 	}
 
@@ -291,7 +306,7 @@ class ImGui {
 			
 
 			for (var i = 0; i < this.elements.length; i++) {
-				var x = this.x + 10;
+				var x = this.x + GAP;
 				// var y = this.y + TAB_HEIGHT + GAP + i * GAP * 3;
 				var y = this.y + TAB_HEIGHT + GAP;
 				// start of y with previous element
@@ -305,18 +320,19 @@ class ImGui {
 					y += 14 * (this.elements[i-1].text.split("\n").length - 1);
 				}
 
-				this.elements[i].draw(x, y);
+				// staticText requires this.width, later others might have the option too
+				this.elements[i].draw(x, y, this.width);
 			}
 			
 			ctx.restore();
 		} else {
 			// rect(this.x, this.y, this.width, TAB_HEIGHT, "#000");
-			round_rect(this.x, this.y, this.width, TAB_HEIGHT, "#000", 5);
+			round_rect(this.x, this.y, this.width, TAB_HEIGHT, "#222", 5);
 			
 			this.openTrig();
 		}
 		
-		ImGui.text("ImGui JS", this.x + TRIG_OFFSET * 5, this.y + TRIG_OFFSET * 3);
+		ImGui.text(this.title, this.x + TRIG_OFFSET * 5, this.y + TRIG_OFFSET * 3);
 
 		if ( this.checkHide(curX, curY) ) {
 			circ(this.x + TRIG_OFFSET * 2, this.y + 9, 8, `rgba(66, 149, 249, 0.5)`);
@@ -333,23 +349,27 @@ class ImGui {
 }
 
 class Slider {
-  constructor(min, max, width, init=min, options) {
+  constructor(min, max, width, init, options) {
     this.x;
     this.y;
 		
 		this.init = init;
 
-		this.state = 0;
+		this.state = init;
 		this.validClick = false;
 
 		this.float = options.float ? options.float : false;
+		this.editing = false;
+		this.input = init;
 
 		this.text = options.text ? options.text : "";
 		this.text_x = width + GAP * 2;
 
     this.min = min;
     this.max = max;
-    this.width = width;
+    this.width = width - (ctx.measureText(this.text).width*2) - GAP*2;
+
+		document.addEventListener("keydown", (e) => this.handleInput(e));
   }
 
   draw(x, y) {
@@ -359,7 +379,7 @@ class Slider {
     // if( !this.slidex ) this.slidex = BUTTON_SIZE/8;
 		
 		// this.slideMin = this.x+BUTTON_SIZE;
-		this.slideMin = this.x+7*BUTTON_SIZE/8;
+		this.slideMin = this.x+16;
 		this.slideMax = (this.width) + this.x;
 		
 		if ( !this.slidex && this.init != this.min ) {
@@ -396,21 +416,28 @@ class Slider {
 
 		rect(this.slidex + x, y+BUTTON_SIZE/8, 3*BUTTON_SIZE/5, 6*BUTTON_SIZE/8, INTERACTABLE_SELECT);	
 
-		let number_percent = (this.slidex)/(this.width-BUTTON_SIZE)
-		if (number_percent >= 1) number_percent = 1;
-		if (number_percent <= 0.0125) number_percent = 0;
+		// let number_percent = (this.slidex-2.5)/(this.width-BUTTON_SIZE)
+		// if (number_percent >= 1) number_percent = 1;
+		// if (number_percent <= 0.0125) number_percent = 0;
 		
-		const number = ( (number_percent) *(this.max-this.min)+this.min );
+		// ((number_percent) *(this.max-this.min)+this.min)
+		this.state = this.editing ? this.input : this.state;
+		this.state = Math.max(Math.min(this.state,this.max),this.min);
 		
 		const float_round = this.float == true ? 3 : 0;
 
 		// console.log(number,this.float, float_round,parseFloat(number).toFixed(float_round) )
 
-    ImGui.text(
-        parseFloat(number).toFixed(float_round),
-    x + (this.width/2)-15, this.y+3*BUTTON_SIZE/4);
+		const fixed_number = parseFloat(this.state).toFixed(float_round)
+		const fixed_number_width = ctx.measureText(fixed_number).width 
 
-		this.state = number.toFixed(float_round);
+    ImGui.text(
+			fixed_number,
+    x + (this.width/2) - fixed_number_width / 2, this.y+3*BUTTON_SIZE/4);
+
+		if (this.editing && Date.now() % 1000 <= 500) {
+			rect(x + (this.width/2) + fixed_number_width / 2 + 2, this.y+BUTTON_SIZE/8, 2, 16, "white")
+		}
 
 		if (this.text != "") {
 			ImGui.text(
@@ -424,12 +451,30 @@ class Slider {
 
 	checkClr(x, y) {
     if (
-			between(x, this.x + GAP, (this.x + this.width) ) &&
-			between(y, this.y+7, this.y + BUTTON_SIZE * 1.35)
+			between(x, this.x + GAP - 1, this.slideMax + GAP ) &&
+			between(y, this.y+7, this.y + BUTTON_SIZE * 1.4)
 		) {
 			return true;
     }
 		return false;
+  }
+
+	handleInput(e) {
+		if (this.editing && e.type == "keydown") {
+			if (e.key == "Enter") {
+				this.editing = false;
+				this.state = this.input;
+				this.refresh();
+			} else if (e.key == "Escape") {
+				this.editing = false;
+				this.input = this.state;
+				this.refresh();
+			} else if (e.key == 'Backspace') {
+				this.input = parseInt(this.input.toString().slice(0, -1)) || 0;
+			} else if (e.key == '.' || parseInt(e.key) || e.key == '0' ) {
+				this.input = parseInt(this.input + e.key);
+			}
+		}
   }
 
   check(x, y, e) {
@@ -438,28 +483,49 @@ class Slider {
 		// on mouseup set this.validClick = false
 		// only if this.validClick is true change slide
     if (
-			between(x, this.x + GAP, this.slideMax ) &&
-			between(y, this.y+7, this.y + BUTTON_SIZE * 1.35)
+			between(x, this.x + GAP - 1, this.slideMax + GAP ) &&
+			between(y, this.y+7, this.y + BUTTON_SIZE * 1.4)
 		) {
-			if (e.type == "mousedown") this.validClick = true;
-			if (e.type == "mouseup") return this.validClick = false;
+			if (e.buttons != 2 && e.type != "mouseup" && this.validClick) {
+				this.slidex = 
+				Math.min( 
+					Math.max(x, Math.floor(this.slideMin)),
+					this.slideMax
+				) - 3*BUTTON_SIZE/5-2-this.x;
+			}
+
+			if (e.type == "mousedown") {
+				if (e.buttons == 2) {this.editing = true; this.input = this.state;}
+				else {
+					const number_percent = (this.slidex-2.5)/(this.width-BUTTON_SIZE)
+					this.state = ((number_percent) *(this.max-this.min)+this.min)
+				}
+				this.validClick = true;
+			}
+			if (e.type == "mouseup") {
+				this.input = parseInt(this.state);
+				return this.validClick = false;
+			}
+
+			if (e.buttons == 2) return
 			
 			if (e.type == "mousemove" && !this.validClick) return;
-
-      this.slidex = 
-      Math.min( 
-				Math.max(x, Math.floor(this.slideMin)),
-        this.slideMax
-      ) - 3*BUTTON_SIZE/5-2-this.x;
+			else if (e.type == "mousemove" && e.buttons !== 2) {
+				const number_percent = (this.slidex-2.5)/(this.width-BUTTON_SIZE)
+				this.state = ((number_percent) *(this.max-this.min)+this.min)
+			}
 			
 			return true;
     }
 		this.validClick = false;
+		this.editing = false;
 		return false;
   }
 
 	refresh() {
 		// from state, refresh slider
+		this.state = this.state > this.max ? this.max : this.state < this.min ? this.min : this.state;
+
 		this.slidex = 
 			(this.state-this.min)
 			/
@@ -482,7 +548,7 @@ class Button {
 
 			if (e.buttons == 1 && this.check(e.x,e.y)) {
 				this.state = true;
-				setTimeout( () => {this.state = false}, 10 )
+				setTimeout( () => {this.state = false}, 1 )
 			}
 
 		});
@@ -562,7 +628,7 @@ class Checkbox {
 		if (
 			between(x, this.x + GAP, this.x + BUTTON_SIZE + GAP) &&
 			between(y, this.y + GAP, this.y + BUTTON_SIZE + GAP) &&
-      ((!e || (e.movementX == 0 && e.movementY == 0)) && e.type == "mousedown")
+      ((!e || (e.movementX == 0 && e.movementY == 0)) && e.type == "mousedown" && e.buttons == 1)
 		) {
 			this.state = !this.state;
 			return true;
@@ -591,14 +657,15 @@ class Checkbox {
 }
 
 class StaticText {
-	constructor(text, color) {
+	constructor(text, color, center) {
 		this.x = 0;
 		this.y = 0;
 		this.text = text;
-		this.color = color
+		this.color = color;
+		this.center = center;
 	}
 
-	draw(x, y) {
+	draw(x, y, width) {
 		this.x = x;
 		this.y = y;
 
@@ -607,10 +674,14 @@ class StaticText {
 		for(let i=0; i<lines.length; i++) {
 			// 14px is the height of the font used in ImGui.text()
 			// will make fonts changable in the future
-			ImGui.text(lines[i], x, y + 14 * (i + 1), this.color);
-			// y += 14; // move to the next line
-		}	
-		// ImGui.text(this.text, x, y+14, this.color);
+			if (this.center) {
+				const textWidth = ctx.measureText(lines[i]).width;
+				this.x -= GAP + textWidth
+				this.x += (textWidth+width)/2
+			}
+			ImGui.text(lines[i], this.x, this.y + 14 * (i + 1), this.color);
+			this.x = x; // reset x to the original value for the next line
+		}
 	}
 
 	check(x, y, e) {
@@ -626,4 +697,4 @@ window.ImGui = ImGui;
 
 document.addEventListener("contextmenu", function (e) { 
   e.preventDefault(); 
-})
+});
