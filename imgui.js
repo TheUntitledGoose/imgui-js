@@ -532,7 +532,7 @@ class Slider {
 
 			if (e.type == "mousedown") {
 				if (e.buttons == 2) {this.editing = true; 
-					this.input = parseFloat(this.state).toFixed(this.float == true ? 3 : 0);}
+					this.input = parseFloat(this.state);}
 				else {
 					this.slidex = 
 					Math.min( 
