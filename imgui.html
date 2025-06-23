@@ -20,9 +20,18 @@
 	let windowHeight = window.innerHeight;
 	
 	let imgui = new ImGui(200, 250, 400, 100, c);
+
+	// Customize the title!
+	imgui.title = "ImGui Demo";
+	// Make a checkbox!
 	let checkbox = imgui.checkbox("Rainbow mode", false);
+	// Make a checkbox with COLOR!
+	let checkbox_color = imgui.checkbox("Checkbox with color!", false, "red");
+	// Make a slider!
 	let slider = imgui.slider(0, 1_000_000, undefined, 500_000);
+	// Make a slider with TEXT!
 	let slider_with_text = imgui.slider(0, 1_000, undefined, 10, {text:"Slider with text"});
+	// Make a button!
 	let btn = imgui.button("An example of a long text in a button", true);
 	// Text could be a single line...
 	imgui.staticText("A single line.");
@@ -37,7 +46,7 @@
 	// You could change text via a click...
 	let changing_text = imgui.staticText("Change me! Click the button!", "yellow");
 
-
+	// Initialize function to setup the heights and widths (currently not working for widths)
 	imgui.init();
 
 	let old_checkbox;
