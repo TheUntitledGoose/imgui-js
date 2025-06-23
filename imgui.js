@@ -401,7 +401,9 @@ class Slider {
 
     this.min = min;
     this.max = max;
-    this.width = width - (ctx.measureText(this.text).width*2) - GAP*2;
+		ctx.font = "14px sans-serif";
+		const text_width = this.text != "" ? (ctx.measureText(this.text).width+GAP) : 0
+    this.width = width - text_width - GAP*2;
 
 		document.addEventListener("keydown", (e) => this.handleInput(e));
   }
@@ -455,14 +457,14 @@ class Slider {
 		// if (number_percent <= 0.0125) number_percent = 0;
 		
 		// ((number_percent) *(this.max-this.min)+this.min)
-		this.state = this.editing ? this.input : this.state;
+		// this.state = this.editing ? this.input : this.state;
 		this.state = Math.max(Math.min(this.state,this.max),this.min);
 		
 		const float_round = this.float == true ? 3 : 0;
 
 		// console.log(number,this.float, float_round,parseFloat(number).toFixed(float_round) )
 
-		const fixed_number = parseFloat(this.state).toFixed(float_round)
+		const fixed_number = !this.editing ? parseFloat(this.state).toFixed(float_round) : this.input
 		const fixed_number_width = ctx.measureText(fixed_number).width 
 
     ImGui.text(
@@ -497,16 +499,16 @@ class Slider {
 		if (this.editing && e.type == "keydown") {
 			if (e.key == "Enter") {
 				this.editing = false;
-				this.state = this.input;
+				this.state = parseFloat(this.input || 0);
 				this.refresh();
 			} else if (e.key == "Escape") {
 				this.editing = false;
 				this.input = this.state;
 				this.refresh();
 			} else if (e.key == 'Backspace') {
-				this.input = parseInt(this.input.toString().slice(0, -1)) || 0;
+				this.input = this.input.toString().slice(0, -1);
 			} else if (e.key == '.' || parseInt(e.key) || e.key == '0' ) {
-				this.input = parseInt(this.input + e.key);
+				this.input = this.input + e.key;
 			}
 		}
   }
@@ -529,7 +531,8 @@ class Slider {
 			}
 
 			if (e.type == "mousedown") {
-				if (e.buttons == 2) {this.editing = true; this.input = this.state;}
+				if (e.buttons == 2) {this.editing = true; 
+					this.input = parseFloat(this.state).toFixed(this.float == true ? 3 : 0);}
 				else {
 					this.slidex = 
 					Math.min( 
@@ -543,7 +546,6 @@ class Slider {
 				this.validClick = true;
 			}
 			if (e.type == "mouseup") {
-				this.input = parseInt(this.state);
 				return this.validClick = false;
 			}
 

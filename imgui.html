@@ -30,7 +30,9 @@
 	// Make a slider!
 	let slider = imgui.slider(0, 1_000_000, undefined, 500_000);
 	// Make a slider with TEXT!
-	let slider_with_text = imgui.slider(0, 1_000, undefined, 10, {text:"Slider with text"});
+	let slider_with_text = imgui.slider(0, 2, undefined, 1, {float: true});
+	// Make a slider as a float!
+	let slider_float = imgui.slider(0, 1_000, undefined, 10, {text:"Slider with text"});
 	// Make a button!
 	let button = imgui.button("An example of a long text in a button", true);
 	// You could change text via a click...
