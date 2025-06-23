@@ -33,15 +33,25 @@ let imgui = new ImGui(200, 250, 400, 100, c);
 // Add some elements...
 let checkbox = imgui.checkbox("Test", true);
 let slider = imgui.slider(0, 100);
-let btn = imgui.button("An example of a long text in a button", true);
+let button = imgui.button("An example of a long text in a button", true);
+// You could change text via a click...
+let changing_text = imgui.staticText("Change me! Click the button!", "yellow");
+button.onClick(() => {
+  console.log(`Clicked button` +
+            `\nSlider 1 state: ${slider.state}` +
+            `\nSlider with text state: ${slider_with_text.state}` +
+            `\nCheckbox state: ${checkbox.state}`)
+
+  changing_text.text = "Changed!"
+  changing_text.color = "green"
+})
+
 // Text could be a single line...
 imgui.staticText("A single line.");
 // Or multiple lines...
 imgui.staticText("Multiple\nlines.");
 // Or a different color...
 imgui.staticText("A different color.", "red");
-// You could change text via a click...
-let changing_text = imgui.staticText("Change me!", "blue");
 
 // Initialize the UI. This sets the height of the UI to fit all elements.
 imgui.init();
@@ -51,29 +61,36 @@ function animate() {
 
   imgui.draw();
 
-  if (btn.state) {
-    console.log("clicked");
-    console.log(slider.state);
-    console.log(checkbox.toggle);
-    changing_text.text = "Changed!";
-    changing_text.color = "green";
-  }
-
+  requestAnimationFrame(animate)
 }
 
-setInterval(animate, 10)
+requestAnimationFrame(animate)
 ```
 
 ## Current options 
 ### (option = default)
 * *ImGui*: (x = 150, y = 200, width = 400, height = 500, canvas = *REQUIRED*)
 * * Canvas is required as a parameter for the ImGui constructor for it to be drawn on.
-* *Sliders*: (min = 0, max = 100, width = this.width * 2/3, init = min)
+* *Sliders*: (min = 0, max = 100, width = this.width, init = min, options = {text: string, float: bool})
+* * Sliders.text: (string) - Adds text to the slider.
+* * Sliders.float: (bool) - Changes the slider to float.
 * *Button*: (text = "Placeholder")
-* *Checkboxes*: (text = "Placeholder", toggle = false)
-* *Static Text*: (text = "Placeholder", color = "white")
+* * Button.color: (string) - Changes the color of the button.
+* * Button.onClick: (function) - Adds a callback
+* *Checkboxes*: (text = "Placeholder", toggle = false, color = "white")
+* * Checkboxes.text: (string) - Adds text to the checkbox.
+* * Checkboxes.toggle: (bool) - Changes the toggle state.
+* * Checkboxes.color: (string) - Changes the color of the checkbox.
+* * Checkboxes.state: (bool) - Returns the toggle state.
+* *Static Text*: (text = "Placeholder", color = "white", center = false)
+* * Static Text.text: (string) - Changes the text.
+* * Static Text.color: (string) - Changes the color.
+* * Static Text.center: (bool) - Centers the text based on the width.
+
 
 To access the *states* or toggles of the elements, just do element.*state*.
+
+The only exception to this is the *Button* element, which has a callback *onClick* that is triggered when the button is clicked.
 
 # TO DO
 * ~~Sliders~~
@@ -82,5 +99,5 @@ To access the *states* or toggles of the elements, just do element.*state*.
 * Text
 * * ~~Static Text~~
 * * Dynamic Text
-* Adjustable Window Size <= Right now
+* Adjustable Window Size
 * Sub-Sections

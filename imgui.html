@@ -5,7 +5,7 @@
 	<!-- <script type="module" src="https://cdn.jsdelivr.net/gh/TheUntitledGoose/imgui-js@main/imgui.js"></script> -->
 </head>
 
-<body style='overflow: hidden;'>
+<body style='overflow: hidden; margin: 0;'>
 	<canvas id='myCanvas' width=1000 height=1000></canvas>
   <script src="imgui.js"></script>
 
@@ -32,7 +32,19 @@
 	// Make a slider with TEXT!
 	let slider_with_text = imgui.slider(0, 1_000, undefined, 10, {text:"Slider with text"});
 	// Make a button!
-	let btn = imgui.button("An example of a long text in a button", true);
+	let button = imgui.button("An example of a long text in a button", true);
+	// You could change text via a click...
+	let changing_text = imgui.staticText("Change me! Click the button!", "yellow");
+	button.onClick(() => {
+		console.log(`Clicked button` +
+							`\nSlider 1 state: ${slider.state}` +
+							`\nSlider with text state: ${slider_with_text.state}` +
+							`\nCheckbox state: ${checkbox.state}`)
+
+		changing_text.text = "Changed!"
+		changing_text.color = "green"
+	})
+
 	// Text could be a single line...
 	imgui.staticText("A single line.");
 	// Or multiple lines...
@@ -43,8 +55,6 @@
 	imgui.staticText("Centered!", undefined, true);
 	// Or centered text WITH COLORS....
 	imgui.staticText("Fancy center!", "gold", true);
-	// You could change text via a click...
-	let changing_text = imgui.staticText("Change me! Click the button!", "yellow");
 
 	// Initialize function to setup the heights and widths (currently not working for widths)
 	imgui.init();
@@ -56,15 +66,6 @@
 		ctx.clearRect(0, 0, c.width, c.height);
 
 		imgui.draw();
-
-		if (btn.state) {
-			console.log("clicked")
-			console.log(slider.state)
-			console.log(checkbox.state)
-
-			changing_text.text = "Changed!"
-    	changing_text.color = "green"
-		}
 
 		let hue = 0
 		if (checkbox.state && !old_checkbox) {
@@ -90,7 +91,6 @@
 		requestAnimationFrame(animate)
 	}
 
-	// setInterval(animate, 10);
 	requestAnimationFrame(animate)
 
 	</script>

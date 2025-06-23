@@ -130,8 +130,8 @@ class ImGui {
 
 	}
 
-	static SliderFlags = {
-		"Float" : true
+	static Flags = {
+		"Float" : true,
 	}
 
 	static text(text, x, y, color = "white") {
@@ -157,8 +157,8 @@ class ImGui {
 
 	checkHide(x, y) {
 		if (
-			between(x, this.x, this.x + TRIG_OFFSET + 20) &&
-			between(y, this.y, this.y + TRIG_OFFSET + 20)
+			between(x, this.x, this.x + TRIG_OFFSET + 15) &&
+			between(y, this.y, this.y + TRIG_OFFSET + 15)
 		) {
 			return true;
 		} else {
@@ -186,32 +186,66 @@ class ImGui {
 		var minX = this.x;
 		var minY = this.y;
 		var maxX = this.x + this.width;
-		var maxY = this.y + this.height;
+		var maxY = this.y + (this.hidden ? TAB_HEIGHT : this.height);
 
 		if (between(x, minX, maxX) && between(y, minY, maxY)) return true;
 		return false;
 	}
 
+	/**
+	* Adds a checkbox to the ImGui window.
+	*
+	* @param {string} text - The label of the checkbox.
+	* @param {boolean} [toggle=false] - The initial state of the checkbox (checked or unchecked).
+	* @param {string} [color="white"] - The color of text of the checkbox.
+	* @returns {Checkbox} - The `Checkbox` object.
+	*/
 	checkbox(text = "Placeholder", toggle = false, color = "white") {
 		var checkbox = new Checkbox(text, toggle, color);
 		this.elements.push(checkbox);
 		return checkbox;
 	}
-
+	
+	/**
+	 * Adds a button to the ImGui interface.
+	 *
+	 * @param {string} [text="Placeholder"] - The text displayed on the button.
+	 * @returns {Button} - A `Button` object.
+	 * @returns {Slider} The created slider element with a method:
+ 	 *   `.onClick(callback: function)` to register a click handler.
+	 */
 	button(text = "Placeholder") {
 		var button = new Button(text);
 		this.elements.push(button);
 		return button;
 	}
 
+	/**
+	 * Adds a static text element to the ImGui instance.
+	 *
+	 * @param {string} text - The text to display.
+	 * @param {string} [color="white"] - The color of the text.
+	 * @param {boolean} [center=false] - Whether to center the text within the ImGui window.
+	 * @returns {StaticText} The `StaticText` element.
+	 */
 	staticText(text = "Placeholder", color = "white", center = false) {
 		var staticText = new StaticText(text, color, center);
 		this.elements.push(staticText);
 		return staticText;
 	}
 
-	slider(min = 0, max = 100, width = this.width, init = min, flags) {
-		var slider = new Slider(min, max, width, init, {...flags})
+	/**
+	 * Creates a slider element.
+	 *
+	 * @param {number} [min=0] - The minimum value of the slider. Defaults to 0.
+	 * @param {number} [max=100] - The maximum value of the slider. Defaults to 100.
+	 * @param {number} [width=this.width] - The width of the slider. Defaults to the instance's width.
+	 * @param {number} [init=min] - The initial value of the slider. Defaults to the `min` value.
+	 * @param {Object} [options] - Additional configuration options for the slider (e.g., `{ float: true }` for floating-point values).
+	 * @returns {Slider} The `Slider` element.
+	 */
+	slider(min = 0, max = 100, width = this.width, init = min, options) {
+		var slider = new Slider(min, max, width, init, {...options})
 		this.elements.push(slider);
 		return slider;
   }
@@ -451,8 +485,8 @@ class Slider {
 
 	checkClr(x, y) {
     if (
-			between(x, this.x + GAP - 1, this.slideMax + GAP ) &&
-			between(y, this.y+7, this.y + BUTTON_SIZE * 1.4)
+			between(x, this.x, this.slideMax ) &&
+			between(y, this.y, this.y + BUTTON_SIZE)
 		) {
 			return true;
     }
@@ -483,13 +517,13 @@ class Slider {
 		// on mouseup set this.validClick = false
 		// only if this.validClick is true change slide
     if (
-			between(x, this.x + GAP - 1, this.slideMax + GAP ) &&
-			between(y, this.y+7, this.y + BUTTON_SIZE * 1.4)
+			between(x, this.x, this.slideMax ) &&
+			between(y, this.y, this.y + BUTTON_SIZE)
 		) {
 			if (e.buttons != 2 && e.type != "mouseup" && this.validClick) {
 				this.slidex = 
 				Math.min( 
-					Math.max(x, Math.floor(this.slideMin)),
+					Math.max(x+BUTTON_SIZE/2, Math.floor(this.slideMin)),
 					this.slideMax
 				) - 3*BUTTON_SIZE/5-2-this.x;
 			}
@@ -497,6 +531,12 @@ class Slider {
 			if (e.type == "mousedown") {
 				if (e.buttons == 2) {this.editing = true; this.input = this.state;}
 				else {
+					this.slidex = 
+					Math.min( 
+						Math.max(x+BUTTON_SIZE/2, Math.floor(this.slideMin)),
+						this.slideMax
+					) - 3*BUTTON_SIZE/5-2-this.x;
+
 					const number_percent = (this.slidex-2.5)/(this.width-BUTTON_SIZE)
 					this.state = ((number_percent) *(this.max-this.min)+this.min)
 				}
@@ -541,17 +581,10 @@ class Button {
 		this.y = 0;
 		this.text = text;
 		this.width = ctx.measureText(this.text).width;
+
+		this.callbacks = [];
 		
 		this.color = BUTTON_BACKGROUND;
-
-		document.querySelector("canvas").addEventListener("mousedown", (e) => {
-
-			if (e.buttons == 1 && this.check(e.x,e.y)) {
-				this.state = true;
-				setTimeout( () => {this.state = false}, 1 )
-			}
-
-		});
 	}
 
 	check(x, y, e) {
@@ -559,11 +592,14 @@ class Button {
 		// this.color based on if click or if on button
 
 		if (
-			between(x, this.x + GAP, this.x + ctx.measureText(this.text).width + GAP * 3) &&
-			between(y, this.y + GAP, this.y + BUTTON_SIZE * 1.5) 
+			between(x, this.x, this.x + ctx.measureText(this.text).width + GAP * 2 ) &&
+			between(y, this.y, this.y + BUTTON_SIZE) 
 		) {
 			if (!e || ((e.movementX == 0 && e.movementY == 0) && e.type == "mousedown")){
 				this.color = INTERACTABLE_SELECT;
+
+				this.callbacks.forEach(callback => callback());
+			
 			}
 			return true;
 		}
@@ -573,8 +609,8 @@ class Button {
 	checkClr(x, y) {
 		// console.log(x,y)
     if (
-			between(x, this.x + GAP, this.x + ctx.measureText(this.text).width + GAP * 3 ) &&
-			between(y, this.y + GAP, this.y + BUTTON_SIZE * 1.5)
+			between(x, this.x, this.x + ctx.measureText(this.text).width + GAP * 2 ) &&
+			between(y, this.y, this.y + BUTTON_SIZE)
 		) {
 			if (this.color != INTERACTABLE_SELECT) this.color = INTERACTABLE_SELECT_MORE;
 			else this.color = INTERACTABLE_SELECT_MORE
@@ -582,6 +618,12 @@ class Button {
     }
 		return false;
   }
+
+	onClick(callback) {
+		if (typeof callback === 'function') {
+			this.callbacks.push(callback);
+		}
+	}
 
 	draw(x, y) {
 		this.x = x;
