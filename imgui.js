@@ -27,8 +27,8 @@ export const BUTTON_SIZE = 20;
 const TRIG_OFFSET = 5;
 
 //---------//
-let curX = 0;
-let curY = 0;
+let globalMouseX = 0;
+let globalMouseY = 0;
 
 // c.height = windowHeight;
 // c.width = windowWidth;
@@ -114,8 +114,8 @@ class ImGui {
 			// offset = origin - mouse
 			// draw from mouse position using offset
 
-			curX = e.x;
-			curY = e.y;
+			globalMouseX = e.x;
+			globalMouseY = e.y;
 			if (e.buttons == 1 && this.moving) {
 				// this.update(this.x + e.movementX, this.y + e.movementY);
 				this.update(e.x + this.offsetX, e.y + this.offsetY);
@@ -143,10 +143,10 @@ class ImGui {
   }
 
 	checkMove(x, y) {
-		var minX = this.x + TRIG_OFFSET * 5;
+		var minX = this.x + TRIG_OFFSET * 4;
 		var minY = this.y + 4;
-		var maxX = this.x + 10 + this.width;
-		var maxY = this.y + TAB_HEIGHT * 1.5;
+		var maxX = this.x + this.width;
+		var maxY = this.y + TAB_HEIGHT;
 
 		if (between(x, minX, maxX) && between(y, minY, maxY)) {
 			this.selected = true
@@ -368,7 +368,7 @@ class ImGui {
 		
 		ImGui.text(this.title, this.x + TRIG_OFFSET * 5, this.y + TRIG_OFFSET * 3);
 
-		if ( this.checkHide(curX, curY) ) {
+		if ( this.checkHide(globalMouseX, globalMouseY) ) {
 			circ(this.x + TRIG_OFFSET * 2, this.y + 9, 8, `rgba(66, 149, 249, 0.5)`);
 		}
 
@@ -440,7 +440,7 @@ class Slider {
 		}
 
 		
-    if ( this.checkClr(curX, curY) ) {
+    if ( this.checkClr(globalMouseX, globalMouseY) ) {
 			rect(x, y, this.width, BUTTON_SIZE, INTERACTABLE_SELECT_MORE);
 		} else {
 			rect(x, y, this.width, BUTTON_SIZE, BUTTON_BACKGROUND);			
@@ -632,7 +632,7 @@ class Button {
 		this.y = y;
 		this.width = ctx.measureText(this.text).width;
 
-		if ( this.checkClr(curX, curY) ) {
+		if ( this.checkClr(globalMouseX, globalMouseY) ) {
 			rect(x, y, this.width + GAP * 2, BUTTON_SIZE, this.color);
 		} else {
 			rect(x, y, this.width + GAP * 2, BUTTON_SIZE, BUTTON_BACKGROUND);
@@ -671,8 +671,8 @@ class Checkbox {
 
 	check(x, y, e) {
 		if (
-			between(x, this.x + GAP, this.x + BUTTON_SIZE + GAP) &&
-			between(y, this.y + GAP, this.y + BUTTON_SIZE + GAP) &&
+			between(x, this.x, this.x + BUTTON_SIZE) &&
+			between(y, this.y, this.y + BUTTON_SIZE) &&
       ((!e || (e.movementX == 0 && e.movementY == 0)) && e.type == "mousedown" && e.buttons == 1)
 		) {
 			this.state = !this.state;
@@ -681,19 +681,28 @@ class Checkbox {
 		return false;
 	}
 
+	checkClr(x, y) {
+    if (
+			between(x, this.x, this.x + BUTTON_SIZE ) &&
+			between(y, this.y, this.y + BUTTON_SIZE)
+		) {
+			return true;
+    }
+		return false;
+  }
+
 	draw(x, y) {
 		this.x = x;
 		this.y = y;
 
-		rect(x, y, BUTTON_SIZE, BUTTON_SIZE, BUTTON_BACKGROUND);
+		const color = this.checkClr(globalMouseX, globalMouseY) ? INTERACTABLE_SELECT_MORE : BUTTON_BACKGROUND;
+		rect(x, y, BUTTON_SIZE, BUTTON_SIZE, color);
 		
 		var newX = x + BUTTON_SIZE + GAP;
 		var newY = y + 5 + BUTTON_SIZE / 2;
 		ImGui.text(this.text, newX, newY, this.color)
 		
-		if (this.state) {
-			this.checkmark(x, y);
-		}
+		if (this.state) this.checkmark(x, y);
 	}
 
 	refresh() {

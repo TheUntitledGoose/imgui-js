@@ -36,7 +36,7 @@
 	// Make a button!
 	let button = imgui.button("An example of a long text in a button", true);
 	// You could change text via a click...
-	let changing_text = imgui.staticText("Change me! Click the button!", "yellow");
+	let changing_text = imgui.staticText("Change me! Click the button or Rainbow mode!", "yellow");
 	button.onClick(() => {
 		console.log(`Clicked button` +
 							`\nSlider 1 state: ${slider.state}` +
@@ -61,33 +61,28 @@
 	// Initialize function to setup the heights and widths (currently not working for widths)
 	imgui.init();
 
-	let old_checkbox;
+	let old_checkbox_state;
 	let rainbowInt;
+
+	let hue = 0
 
 	function animate() {
 		ctx.clearRect(0, 0, c.width, c.height);
 
 		imgui.draw();
 
-		let hue = 0
-		if (checkbox.state && !old_checkbox) {
+		if (checkbox.state && !old_checkbox_state) {
 			console.log("Rainbow mode on")
 			rainbowInt = setInterval(function() {
 				// slowly change the color by going through the hue
-				if (slider.state != 0) {
-					hue += parseInt(slider.state); 
-				}
-				else {hue += 1;}
-				if (hue > 360) {
-					hue = 0; // reset the hue value when it reaches 360
-				}
+				hue = (hue + 2.5) % 360;
 				changing_text.color = "hsl("+hue+",100%,50%)";
-			}, 50);
-		} else if (!checkbox.state && old_checkbox) {
+			}, 1);
+		} else if (!checkbox.state && old_checkbox_state) {
 			console.log("Rainbow mode off")
 			clearInterval(rainbowInt);
 		}
-		old_checkbox = checkbox.state
+		old_checkbox_state = checkbox.state
 
 		// Broken for now. Plans to fix
 		requestAnimationFrame(animate)
