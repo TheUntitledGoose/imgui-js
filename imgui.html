@@ -34,7 +34,8 @@
 	// Make a slider as a float!
 	let slider_float = imgui.slider(0, 1_000, undefined, 10, {text:"Slider with text"});
 	// Make a button!
-	let button = imgui.button("An example of a long text in a button", true);
+	let button = imgui.button("An example of a long text in a button");
+	imgui.button("Or center the button!", true);
 	// You could change text via a click...
 	let changing_text = imgui.staticText("Change me! Click the button or Rainbow mode!", "yellow");
 	button.onClick(() => {

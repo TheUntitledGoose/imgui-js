@@ -134,12 +134,14 @@ class ImGui {
 		"Float" : true,
 	}
 
-	static text(text, x, y, color = "white") {
-		const f = ctx.fillStyle;
+	static text(text, x, y, color = "white", font = "14px sans-serif") {
+		const fill_old = ctx.fillStyle;
+		const font_old = ctx.font;
     ctx.fillStyle = color;
-    ctx.font = "14px sans-serif";
+    ctx.font = font;
     ctx.fillText(text, x, y);
-		ctx.fillStyle = f;
+		ctx.fillStyle = fill_old;
+		ctx.font = font_old;
   }
 
 	checkMove(x, y) {
@@ -214,8 +216,8 @@ class ImGui {
 	 * @returns {Slider} The created slider element with a method:
  	 *   `.onClick(callback: function)` to register a click handler.
 	 */
-	button(text = "Placeholder") {
-		var button = new Button(text);
+	button(text = "Placeholder", center = false) {
+		var button = new Button(text, center);
 		this.elements.push(button);
 		return button;
 	}
@@ -361,7 +363,7 @@ class ImGui {
 			ctx.restore();
 		} else {
 			// rect(this.x, this.y, this.width, TAB_HEIGHT, "#000");
-			round_rect(this.x, this.y, this.width, TAB_HEIGHT, "#222", 5);
+			round_rect(this.x, this.y, this.width, TAB_HEIGHT, color, 5);
 			
 			this.openTrig();
 		}
@@ -578,7 +580,7 @@ class Slider {
 }
 
 class Button {
-	constructor(text) {
+	constructor(text, center) {
 		this.x = 0;
 		this.y = 0;
 		this.text = text;
@@ -586,6 +588,7 @@ class Button {
 
 		this.callbacks = [];
 		
+		this.center = center;
 		this.color = BUTTON_BACKGROUND;
 	}
 
@@ -627,21 +630,26 @@ class Button {
 		}
 	}
 
-	draw(x, y) {
+	draw(x, y, width) {
 		this.x = x;
 		this.y = y;
 		this.width = ctx.measureText(this.text).width;
+		
+		if (this.center) {
+			this.x -= GAP + this.width
+			this.x += (this.width-GAP+width)/2
+		}
 
 		if ( this.checkClr(globalMouseX, globalMouseY) ) {
-			rect(x, y, this.width + GAP * 2, BUTTON_SIZE, this.color);
+			rect(this.x, y, this.width + GAP * 2, BUTTON_SIZE, this.color);
 		} else {
-			rect(x, y, this.width + GAP * 2, BUTTON_SIZE, BUTTON_BACKGROUND);
+			rect(this.x, y, this.width + GAP * 2, BUTTON_SIZE, BUTTON_BACKGROUND);
 		}
 		
-		var newX = x + BUTTON_SIZE * 4 + GAP;
-		var newY = y + 5 + BUTTON_SIZE / 2;
+		// var newX = x + BUTTON_SIZE * 4 + GAP;
+		// var newY = y + 5 + BUTTON_SIZE / 2;
 		ImGui.text(this.text, 
-			x + GAP, this.y+3*BUTTON_SIZE/4
+			this.x + GAP, this.y+3*BUTTON_SIZE/4
 		)
 	}
 
