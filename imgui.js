@@ -1,4 +1,4 @@
-export { ImGui }
+// export { ImGui }
 
 // const c = document.getElementById("myCanvas");
 // const ctx = c.getContext("2d");
@@ -22,7 +22,7 @@ const BUTTON_BACKGROUND = "#254370";
 
 const TAB_HEIGHT = 20;
 const GAP = 10;
-export const BUTTON_SIZE = 20;
+const BUTTON_SIZE = 20;
 
 const TRIG_OFFSET = 5;
 

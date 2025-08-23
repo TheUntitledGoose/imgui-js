@@ -11,7 +11,7 @@ Short answer, yes? It's really simple to use, literally a few lines to get it to
 # Quick setup
 In the head of your HTML file, add this:
 ```html
-<script type="module" src="https://cdn.jsdelivr.net/gh/TheUntitledGoose/imgui-js@main/imgui.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/TheUntitledGoose/imgui-js@main/imgui.js"></script>
 ```
 ImGui will be available in the window object: `window.ImGui`, or you can just do `ImGui`.
 
