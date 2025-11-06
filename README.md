@@ -15,12 +15,6 @@ In the head of your HTML file, add this:
 ```
 ImGui will be available in the window object: `window.ImGui`, or you can just do `ImGui`.
 
-Alternatively, you can download the file and include it locally:
-
-```js
-import { ImGui } from "./imgui.js"
-```
-
 ## Example usage
 
 ```js
@@ -71,9 +65,10 @@ requestAnimationFrame(animate)
 ### (option = default)
 * *ImGui*: (x = 150, y = 200, width = 400, height = 500, canvas = *REQUIRED*)
 * * Canvas is required as a parameter for the ImGui constructor for it to be drawn on.
-* *Sliders*: (min = 0, max = 100, width = this.width, init = min, options = {text: string, float: bool})
-* * Sliders.text: (string) - Adds text to the slider.
-* * Sliders.float: (bool) - Changes the slider to float.
+* *Sliders*: (min = 0, max = 100, width = this.width, init = min, options = {text: string, float: bool, font: string})
+* * Sliders.options.text: (string) - Adds text to the slider.
+* * Sliders.options.float: (bool) - Changes the slider to float.
+* * Sliders.options.font: (string) - Changes the canvas context font.
 * *Button*: (text = "Placeholder")
 * * Button.color: (string) - Changes the color of the button.
 * * Button.onClick: (function) - Adds a callback
@@ -101,3 +96,4 @@ The only exception to this is the *Button* element, which has a callback *onClic
 * * Dynamic Text
 * Adjustable Window Size
 * Sub-Sections
+* Switch "options" to the `.options` like Slider.

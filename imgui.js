@@ -19,6 +19,7 @@ const INTERACTABLE_BACKGROUND = "#141618";
 const INTERACTABLE_SELECT = "#4295f9";
 const INTERACTABLE_SELECT_MORE = "#336cae";
 const BUTTON_BACKGROUND = "#254370";
+const DEFAULT_FONT = "14px sans-serif";
 
 const TAB_HEIGHT = 20;
 const GAP = 10;
@@ -81,6 +82,8 @@ class ImGui {
 
 		this.elements = [];
 
+		this.font = DEFAULT_FONT;
+
 		// ctx_ passed context
 		this.c = canvas;
 		c = canvas;
@@ -134,15 +137,18 @@ class ImGui {
 		"Float" : true,
 	}
 
-	static text(text, x, y, color = "white", font = "14px sans-serif") {
+	static text(text, x, y, color = "white", font = DEFAULT_FONT) {
 		const fill_old = ctx.fillStyle;
 		const font_old = ctx.font;
-    ctx.fillStyle = color;
-    ctx.font = font;
-    ctx.fillText(text, x, y);
+
+		ctx.fillStyle = color;
+		ctx.font = font;
+		ctx.fillText(text, x, y);
+		
+		// Set back original fonts
 		ctx.fillStyle = fill_old;
 		ctx.font = font_old;
-  }
+	}
 
 	checkMove(x, y) {
 		var minX = this.x + TRIG_OFFSET * 4;
@@ -202,8 +208,8 @@ class ImGui {
 	* @param {string} [color="white"] - The color of text of the checkbox.
 	* @returns {Checkbox} - The `Checkbox` object.
 	*/
-	checkbox(text = "Placeholder", toggle = false, color = "white") {
-		var checkbox = new Checkbox(text, toggle, color);
+	checkbox(text = "Placeholder", toggle = false, color = "white", font = DEFAULT_FONT) {
+		var checkbox = new Checkbox(text, toggle, color, font);
 		this.elements.push(checkbox);
 		return checkbox;
 	}
@@ -216,8 +222,8 @@ class ImGui {
 	 * @returns {Slider} The created slider element with a method:
  	 *   `.onClick(callback: function)` to register a click handler.
 	 */
-	button(text = "Placeholder", center = false) {
-		var button = new Button(text, center);
+	button(text = "Placeholder", center = false, font = DEFAULT_FONT) {
+		var button = new Button(text, center, font);
 		this.elements.push(button);
 		return button;
 	}
@@ -230,8 +236,8 @@ class ImGui {
 	 * @param {boolean} [center=false] - Whether to center the text within the ImGui window.
 	 * @returns {StaticText} The `StaticText` element.
 	 */
-	staticText(text = "Placeholder", color = "white", center = false) {
-		var staticText = new StaticText(text, color, center);
+	staticText(text = "Placeholder", color = "white", center = false, font = DEFAULT_FONT) {
+		var staticText = new StaticText(text, color, center, font);
 		this.elements.push(staticText);
 		return staticText;
 	}
@@ -403,8 +409,10 @@ class Slider {
 
     this.min = min;
     this.max = max;
-		ctx.font = "14px sans-serif";
+
+		ctx.font = options.font || DEFAULT_FONT;
 		const text_width = this.text != "" ? (ctx.measureText(this.text).width+GAP) : 0
+
     this.width = width - text_width - GAP*2;
 
 		document.addEventListener("keydown", (e) => this.handleInput(e));
@@ -580,11 +588,13 @@ class Slider {
 }
 
 class Button {
-	constructor(text, center) {
+	constructor(text, center, font = DEFAULT_FONT) {
 		this.x = 0;
 		this.y = 0;
 		this.text = text;
 		this.width = ctx.measureText(this.text).width;
+
+		this.font = font;
 
 		this.callbacks = [];
 		
@@ -633,6 +643,9 @@ class Button {
 	draw(x, y, width) {
 		this.x = x;
 		this.y = y;
+
+		// Set default font for correct text measurements
+		ctx.font = DEFAULT_FONT;
 		this.width = ctx.measureText(this.text).width;
 		
 		if (this.center) {
@@ -719,12 +732,13 @@ class Checkbox {
 }
 
 class StaticText {
-	constructor(text, color, center) {
+	constructor(text, color, center, font = DEFAULT_FONT) {
 		this.x = 0;
 		this.y = 0;
 		this.text = text;
 		this.color = color;
 		this.center = center;
+		this.font = font;
 	}
 
 	draw(x, y, width) {
@@ -736,12 +750,13 @@ class StaticText {
 		for(let i=0; i<lines.length; i++) {
 			// 14px is the height of the font used in ImGui.text()
 			// will make fonts changable in the future
+			ctx.font = this.font;
 			if (this.center) {
 				const textWidth = ctx.measureText(lines[i]).width;
 				this.x -= GAP + textWidth
 				this.x += (textWidth+width)/2
 			}
-			ImGui.text(lines[i], this.x, this.y + 14 * (i + 1), this.color);
+			ImGui.text(lines[i], this.x, this.y + 14 * (i + 1), this.color, this.font);
 			this.x = x; // reset x to the original value for the next line
 		}
 	}
