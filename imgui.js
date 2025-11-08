@@ -184,7 +184,7 @@ class ImGui {
 		var minX = this.x;
 		var minY = this.y;
 		var maxX = this.x + this.width;
-		var maxY = this.y + this.height;
+		var maxY = this.hidden ? this.y + TAB_HEIGHT : this.y + this.height;
 
 		if (between(x, minX, maxX) && between(y, minY, maxY)) return true;
 		return false;
