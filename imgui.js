@@ -34,31 +34,42 @@ let globalMouseY = 0;
 // c.height = windowHeight;
 // c.width = windowWidth;
 
-function rect(x, y, w, h, c) {
+// Function to determine whether a point is inside the triangle or not
+// Used in the resize triangle function
+function pointInTriangle(px, py, x1, y1, x2, y2, x3, y3) {
+	const denominator = ((y2 - y3)*(x1 - x3) + (x3 - x2)*(y1 - y3));
+	const a = ((y2 - y3)*(px - x3) + (x3 - x2)*(py - y3)) / denominator;
+	const b = ((y3 - y1)*(px - x3) + (x1 - x3)*(py - y3)) / denominator;
+	const c = 1 - a - b;
+
+	return (a >= 0) && (b >= 0) && (c >= 0);
+}
+
+function rect(x, y, width, height, color) {
 	ctx.beginPath();
-	ctx.fillStyle = c;
-	ctx.rect(x, y, w, h);
+	ctx.fillStyle = color;
+	ctx.rect(x, y, width, height);
 	ctx.fill();
 }
 
-function round_rect(x, y, w, h, c, r) {
+function round_rect(x, y, width, height, color, radius) {
 	ctx.beginPath();
-	ctx.fillStyle = c;
-	ctx.roundRect(x, y, w, h, r);
+	ctx.fillStyle = color;
+	ctx.roundRect(x, y, width, height, radius);
 	ctx.fill();
 }
 
-function clip_rect(x, y, w, h) {
+function clip_rect(x, y, width, height) {
 	ctx.beginPath();
-	ctx.rect(x, y, w, h);
+	ctx.rect(x, y, width, height);
 	ctx.clip();
 }
 
-function circ(x, y, r, c) {
+function circ(x, y, radius, color) {
 	var f = ctx.fillStyle;
 	ctx.beginPath();
-	ctx.fillStyle = c;
-	ctx.arc(x, y, r, 0, 2 * Math.PI);
+	ctx.fillStyle = color;
+	ctx.arc(x, y, radius, 0, 2 * Math.PI);
 	ctx.fill();
 	ctx.fillStyle = f;
 }
@@ -80,6 +91,17 @@ class ImGui {
 		this.hidden = false;
 		this.selected = true;
 
+		this.resizing = false;
+		// Used to calculate the offsetX and offsetY // Same as the checkMove func.
+		this.resizing_offsetX;
+		this.resizing_offsetY;
+		// Used to calculate the new width and height // Probably a better way of doing this.
+		this.temp_width = width;
+		this.temp_height = height;
+
+		this.minWidth = 150;
+		this.minHeight = 150;
+
 		this.elements = [];
 
 		this.font = DEFAULT_FONT;
@@ -100,6 +122,23 @@ class ImGui {
 					this.hidden = !this.hidden;
 				}
 			}
+
+			const RESIZE_OFFSET = 2 * GAP;
+			const resizeTriangleX = this.x + this.width - RESIZE_OFFSET;
+			const resizeTriangleY = this.y + this.height - RESIZE_OFFSET;
+			if (pointInTriangle(
+				globalMouseX, globalMouseY, 
+				resizeTriangleX, resizeTriangleY + RESIZE_OFFSET,
+				resizeTriangleX + RESIZE_OFFSET, resizeTriangleY + RESIZE_OFFSET,
+				resizeTriangleX + RESIZE_OFFSET, resizeTriangleY,
+			)) {
+				this.resizing = true;
+				this.resizing_offsetX = e.x;
+				this.resizing_offsetY = e.y;
+				this.temp_width = this.width;
+				this.temp_height = this.height;
+			}
+			else this.resizing = false;
 		
 			if (this.checkMove(e.x, e.y)) {
 				this.moving = true;
@@ -122,9 +161,9 @@ class ImGui {
 			if (e.buttons == 1 && this.moving) {
 				// this.update(this.x + e.movementX, this.y + e.movementY);
 				this.update(e.x + this.offsetX, e.y + this.offsetY);
-			} else if (e.buttons == 1) {
-				this.checkClick(e.x, e.y, e);
-			}
+			} 
+			else if (e.buttons == 1 && this.resizing) this.resizeTrigFunc(e)
+			else if (e.buttons == 1) this.checkClick(e.x, e.y, e);
 		});
 
 		this.c.addEventListener("mouseup", (e) => {
@@ -331,6 +370,56 @@ class ImGui {
 		ctx.fill();
 	}
 
+	resizeTrigDraw() {
+		const OFFSET = 2 * GAP
+		const minX = this.x + this.width - OFFSET;
+		const minY = this.y + this.height - OFFSET;
+
+		let fill_color = 
+		pointInTriangle(
+			globalMouseX, globalMouseY, 
+			minX, minY + OFFSET,
+			minX + OFFSET, minY + OFFSET,
+			minX + OFFSET, minY,
+		) ?
+		INTERACTABLE_SELECT_MORE :
+		BUTTON_BACKGROUND;
+
+		round_rect(minX, minY, OFFSET, OFFSET, fill_color, [0,0,5,0]);
+
+		ctx.beginPath();
+		ctx.fillStyle = BACKGROUND;
+		ctx.moveTo(minX, minY);
+		ctx.lineTo(minX + OFFSET, minY);
+		ctx.lineTo(minX, minY + OFFSET);
+		ctx.fill();
+	}
+
+	resizeTrigFunc(e) {
+		// Get the delta-movement and resize to that much
+
+		const offsetX = e.x - this.resizing_offsetX;
+		const offsetY = e.y - this.resizing_offsetY;
+
+		// this.temp_width = this.width;
+		// this.temp_height = this.height;
+
+		this.width = this.temp_width + offsetX;
+		this.height = this.temp_height + offsetY;
+
+		this.width = Math.max(this.width, this.minWidth);
+		this.height = Math.max(this.height, this.minHeight);
+
+		for (let i = 0; i < this.elements.length; i++) {
+			const element = this.elements[i];
+			// Only sliders for now, cause they're the only ones really affected by the changing width
+			if (element.constructor.name == "Slider") {
+				element.setWidth = this.width - 2 * GAP;
+				element.refresh()
+			}
+		}
+	}	
+
 	draw() {
 
 		var color = this.selected ? TAB_COLOR_SEL : TAB_COLOR_UNSEL
@@ -338,14 +427,16 @@ class ImGui {
 		if (!this.hidden) {
 			// rect(this.x, this.y, this.width, TAB_HEIGHT, color);
 			ctx.save();
-			clip_rect(this.x, this.y, this.width, this.height+TAB_HEIGHT)
 
+			clip_rect(this.x, this.y, this.width, this.height)
+			
 			round_rect(this.x, this.y, this.width, TAB_HEIGHT, color, [5,5,0,0]);
 		
 			this.closeTrig();
 			
-			round_rect(this.x, this.y + TAB_HEIGHT, this.width, this.height-TAB_HEIGHT, BACKGROUND, [0,0,5,5]);
-			
+			round_rect(this.x, this.y + TAB_HEIGHT, this.width, this.height-TAB_HEIGHT, BACKGROUND, [0,0,5,5]);			
+
+			this.resizeTrigDraw();
 
 			for (var i = 0; i < this.elements.length; i++) {
 				var x = this.x + GAP;
@@ -397,6 +488,8 @@ class Slider {
 		
 		this.init = init;
 
+		this.setWidth = width;
+
 		this.state = init;
 		this.validClick = false;
 
@@ -405,15 +498,17 @@ class Slider {
 		this.input = init;
 
 		this.text = options.text ? options.text : "";
-		this.text_x = width + GAP * 2;
+		this.text_x = this.setWidth + GAP * 2;
 
+		// Slider values
     this.min = min;
     this.max = max;
 
-		ctx.font = options.font || DEFAULT_FONT;
+		this.font = options.font || DEFAULT_FONT;
+		ctx.font = this.font;
 		const text_width = this.text != "" ? (ctx.measureText(this.text).width+GAP) : 0
 
-    this.width = width - text_width - GAP*2;
+    this.width = this.setWidth - text_width - GAP*2;
 
 		document.addEventListener("keydown", (e) => this.handleInput(e));
   }
@@ -575,6 +670,12 @@ class Slider {
   }
 
 	refresh() {
+
+		ctx.font = this.font;
+		const text_width = this.text != "" ? (ctx.measureText(this.text).width+GAP) : 0
+
+    this.width = this.setWidth - text_width;
+
 		// from state, refresh slider
 		this.state = this.state > this.max ? this.max : this.state < this.min ? this.min : this.state;
 

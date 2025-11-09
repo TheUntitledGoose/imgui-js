@@ -97,3 +97,4 @@ The only exception to this is the *Button* element, which has a callback *onClic
 * Adjustable Window Size
 * Sub-Sections
 * Switch "options" to the `.options` like Slider.
+* Scrollbar for long elements
