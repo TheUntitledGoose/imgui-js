@@ -93,8 +93,9 @@ The only exception to this is the *Button* element, which has a callback *onClic
 * ~~Checkboxes~~
 * Text
 * * ~~Static Text~~
-* * Dynamic Text
-* Adjustable Window Size
+* * Dynamic Text (Typing)
+* ~~Adjustable Window Size~~
 * Sub-Sections
-* Switch "options" to the `.options` like Slider.
+* Combine all "options" to the `.options` like Slider.
 * Scrollbar for long elements
+* Number selector (Small box, drag to change number)

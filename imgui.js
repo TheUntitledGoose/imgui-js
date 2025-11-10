@@ -14,8 +14,11 @@ const TAB_COLOR_SEL = "#29477d";
 // const TAB_COLOR_SEL = "#242424";
 const TAB_COLOR_UNSEL = "#302f30";
 // const BACKGROUND = "#0e0e0e";
-const BACKGROUND = "#151617";
+const BACKGROUND = "#1b1c1d";
 const INTERACTABLE_BACKGROUND = "#141618";
+const SCROLLBAR_BACKGROUND = "#141414";
+const SCROLLBAR_COLOR = "#505050";
+const SCROLLBAR_COLOR_ACTIVE = "#858585ff";
 const INTERACTABLE_SELECT = "#4295f9";
 const INTERACTABLE_SELECT_MORE = "#336cae";
 const BUTTON_BACKGROUND = "#254370";
@@ -74,6 +77,10 @@ function circ(x, y, radius, color) {
 	ctx.fillStyle = f;
 }
 
+function clamp(x, min, max) {
+	return Math.min(Math.max(x, min), max)
+}
+
 const between = (x, min, max) => {
 	return x >= min && x <= max;
 };
@@ -86,6 +93,12 @@ class ImGui {
 		this.init_height = height;
 		this.height = height;
 		this.title = "ImGui JS"
+		
+		// For scrollbar
+		this.maxHeight;
+		this.scrollbar_active = false;
+		this.scroll_height = 0;
+		this.scrollbar_offsetY;
 
 		this.moving = false;
 		this.hidden = false;
@@ -98,7 +111,7 @@ class ImGui {
 		// Used to calculate the new width and height // Probably a better way of doing this.
 		this.temp_width = width;
 		this.temp_height = height;
-
+		// Part of resizing
 		this.minWidth = 150;
 		this.minHeight = 150;
 
@@ -139,6 +152,11 @@ class ImGui {
 				this.temp_height = this.height;
 			}
 			else this.resizing = false;
+
+			if (this.isSlider) {
+				this.scrollbar_active = true;
+				this.scrollbar_offsetY = e.y;
+			}
 		
 			if (this.checkMove(e.x, e.y)) {
 				this.moving = true;
@@ -163,6 +181,7 @@ class ImGui {
 				this.update(e.x + this.offsetX, e.y + this.offsetY);
 			} 
 			else if (e.buttons == 1 && this.resizing) this.resizeTrigFunc(e)
+			else if (e.buttons == 1 && this.scrollbar_active) this.scrollbarFunc(e)
 			else if (e.buttons == 1) this.checkClick(e.x, e.y, e);
 		});
 
@@ -171,6 +190,10 @@ class ImGui {
 		});
 
 	}
+
+	// 
+	// Helper functions 
+	//
 
 	static Flags = {
 		"Float" : true,
@@ -239,6 +262,10 @@ class ImGui {
 		return false;
 	}
 
+	// 
+	// UI Elements
+	// 
+
 	/**
 	* Adds a checkbox to the ImGui window.
 	*
@@ -304,6 +331,10 @@ class ImGui {
 		this.y = y;
 	}
 
+	// 
+	// General UI Funcs
+	// 
+
 	init() {
 		this.height = Math.max(this.init_height, TAB_HEIGHT + GAP + (this.elements.length * (BUTTON_SIZE + GAP)));
 		// check all text elements for multi-line text and adjust height accordingly.
@@ -314,6 +345,8 @@ class ImGui {
 				this.height += (lines.length - 1) * 14;
 			}
 		}
+		// Set max-height for scrollbar
+		this.maxHeight = this.height;
 
 
 		// loop through all elements and get the longest text to decide width of overall gui.
@@ -388,7 +421,7 @@ class ImGui {
 		round_rect(minX, minY, OFFSET, OFFSET, fill_color, [0,0,5,0]);
 
 		ctx.beginPath();
-		ctx.fillStyle = BACKGROUND;
+		ctx.fillStyle = (this.height < this.maxHeight ? SCROLLBAR_BACKGROUND : BACKGROUND);
 		ctx.moveTo(minX, minY);
 		ctx.lineTo(minX + OFFSET, minY);
 		ctx.lineTo(minX, minY + OFFSET);
@@ -400,6 +433,9 @@ class ImGui {
 
 		const offsetX = e.x - this.resizing_offsetX;
 		const offsetY = e.y - this.resizing_offsetY;
+
+		this.scroll_height += Math.max(0, offsetY);
+		this.scroll_height = Math.min(this.scroll_height, 0);
 
 		// this.temp_width = this.width;
 		// this.temp_height = this.height;
@@ -414,11 +450,41 @@ class ImGui {
 			const element = this.elements[i];
 			// Only sliders for now, cause they're the only ones really affected by the changing width
 			if (element.constructor.name == "Slider") {
-				element.setWidth = this.width - 2 * GAP;
+				element.setWidth = this.width - (this.height < this.maxHeight ? 4 : 2) * GAP;
 				element.refresh()
 			}
 		}
 	}	
+
+	scrollbarDraw() {
+		if (this.height < this.maxHeight) {
+			const minX = this.x + this.width - 2 * GAP;
+			
+			const height = (( this.height ) / ( this.maxHeight )) * (this.height - (GAP * 2) - TAB_HEIGHT - GAP/2)
+
+			rect(minX, this.y + TAB_HEIGHT, 2 * GAP, this.height, SCROLLBAR_BACKGROUND);
+
+			// On scrollbar hover
+			this.isSlider = 
+			(between(globalMouseX, minX + GAP/2, minX + GAP/2 + GAP) && between(globalMouseY, this.y + TAB_HEIGHT + GAP/2 + this.scroll_height, this.y + TAB_HEIGHT + GAP/2 + this.scroll_height + height));
+			const color = this.isSlider ? SCROLLBAR_COLOR_ACTIVE : SCROLLBAR_COLOR
+
+			round_rect(minX + GAP/2, this.y + TAB_HEIGHT + GAP/2 + this.scroll_height, GAP, height, color, 5);
+
+		}
+	}
+
+	scrollbarFunc(e) {
+		const offsetY = e.y - this.scrollbar_offsetY;
+
+		// Scrolling will work via an offset.
+		// In the draw call, the elements will refer to the this.scroll_height which will do:
+		// y = this.y... - this.scroll_height
+		const height = ((1-( this.height ) / ( this.maxHeight ))) * (this.height - (GAP * 2) - TAB_HEIGHT - GAP/2)
+		this.scroll_height = clamp(offsetY, 0, height);
+
+
+	}
 
 	draw() {
 
@@ -434,17 +500,16 @@ class ImGui {
 		
 			this.closeTrig();
 			
-			round_rect(this.x, this.y + TAB_HEIGHT, this.width, this.height-TAB_HEIGHT, BACKGROUND, [0,0,5,5]);			
+			round_rect(this.x, this.y + TAB_HEIGHT, this.width, this.height-TAB_HEIGHT, BACKGROUND, [0,0,5,5]);
 
-			this.resizeTrigDraw();
-
+			clip_rect(this.x, this.y+TAB_HEIGHT, this.width, this.height-TAB_HEIGHT)
+			
 			for (var i = 0; i < this.elements.length; i++) {
 				var x = this.x + GAP;
-				// var y = this.y + TAB_HEIGHT + GAP + i * GAP * 3;
-				var y = this.y + TAB_HEIGHT + GAP;
+				var y = (this.y - this.scroll_height) + TAB_HEIGHT + GAP;
 				// start of y with previous element
 				if (i > 0) {
-					y += this.elements[i-1].y - this.y;
+					y += this.elements[i-1].y - this.y + this.scroll_height;
 				}
 				
 				// if multi-line text add more y offset for each line
@@ -457,11 +522,12 @@ class ImGui {
 				this.elements[i].draw(x, y, this.width);
 			}
 			
+			this.scrollbarDraw();
+			this.resizeTrigDraw();
+			
 			ctx.restore();
 		} else {
-			// rect(this.x, this.y, this.width, TAB_HEIGHT, "#000");
 			round_rect(this.x, this.y, this.width, TAB_HEIGHT, color, 5);
-			
 			this.openTrig();
 		}
 		
