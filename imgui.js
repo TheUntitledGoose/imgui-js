@@ -155,7 +155,9 @@ class ImGui {
 
 			if (this.isSlider) {
 				this.scrollbar_active = true;
-				this.scrollbar_offsetY = e.y;
+				this.scrollbar_offsetY = e.y - this.scroll_height;
+			} else {
+				this.scrollbar_active = false;
 			}
 		
 			if (this.checkMove(e.x, e.y)) {
@@ -434,8 +436,10 @@ class ImGui {
 		const offsetX = e.x - this.resizing_offsetX;
 		const offsetY = e.y - this.resizing_offsetY;
 
+		//  ????????????????????????
 		this.scroll_height += Math.max(0, offsetY);
 		this.scroll_height = Math.min(this.scroll_height, 0);
+		//  ????????????????????????
 
 		// this.temp_width = this.width;
 		// this.temp_height = this.height;
@@ -502,6 +506,9 @@ class ImGui {
 			
 			round_rect(this.x, this.y + TAB_HEIGHT, this.width, this.height-TAB_HEIGHT, BACKGROUND, [0,0,5,5]);
 
+			this.scrollbarDraw();
+			this.resizeTrigDraw();
+
 			clip_rect(this.x, this.y+TAB_HEIGHT, this.width, this.height-TAB_HEIGHT)
 			
 			for (var i = 0; i < this.elements.length; i++) {
@@ -521,9 +528,6 @@ class ImGui {
 				// staticText requires this.width, later others might have the option too
 				this.elements[i].draw(x, y, this.width);
 			}
-			
-			this.scrollbarDraw();
-			this.resizeTrigDraw();
 			
 			ctx.restore();
 		} else {
