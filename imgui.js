@@ -483,11 +483,13 @@ class ImGui {
 
 		// Scrolling will work via an offset.
 		// In the draw call, the elements will refer to the this.scroll_height which will do:
-		// y = this.y... - this.scroll_height
-		const height = ((1-( this.height ) / ( this.maxHeight ))) * (this.height - (GAP * 2) - TAB_HEIGHT - GAP/2)
+		// y = this.y... - this.scroll_height		
+		const height = ( 1 - ( this.height / this.maxHeight ) ) 
+								 * (this.height - (GAP * 2) - TAB_HEIGHT - GAP/2)
+
 		this.scroll_height = clamp(offsetY, 0, height);
 
-
+		console.log(this.scroll_height)
 	}
 
 	draw() {
@@ -510,13 +512,20 @@ class ImGui {
 			this.resizeTrigDraw();
 
 			clip_rect(this.x, this.y+TAB_HEIGHT, this.width, this.height-TAB_HEIGHT)
+
+			const height = ( 1 - ( this.height / this.maxHeight ) ) 
+								 	 * (this.height - (GAP * 2) - TAB_HEIGHT - GAP/2)
 			
 			for (var i = 0; i < this.elements.length; i++) {
 				var x = this.x + GAP;
-				var y = (this.y - this.scroll_height) + TAB_HEIGHT + GAP;
+
+				// Scrollbar (yeah I got no clue wtf is happening here.)
+				const content_scroll = (this.scroll_height / height) * (this.maxHeight - this.height) || 0; // or 0 because at 0 scroll it returns NaN
+
+				var y = (this.y - content_scroll ) + TAB_HEIGHT + GAP;
 				// start of y with previous element
 				if (i > 0) {
-					y += this.elements[i-1].y - this.y + this.scroll_height;
+					y += this.elements[i-1].y - this.y + content_scroll;
 				}
 				
 				// if multi-line text add more y offset for each line
