@@ -488,8 +488,6 @@ class ImGui {
 								 * (this.height - (GAP * 2) - TAB_HEIGHT - GAP/2)
 
 		this.scroll_height = clamp(offsetY, 0, height);
-
-		console.log(this.scroll_height)
 	}
 
 	draw() {
@@ -753,7 +751,7 @@ class Slider {
 		ctx.font = this.font;
 		const text_width = this.text != "" ? (ctx.measureText(this.text).width+GAP) : 0
 
-    this.width = this.setWidth - text_width;
+    this.width = this.setWidth - text_width - GAP*2;
 
 		// from state, refresh slider
 		this.state = this.state > this.max ? this.max : this.state < this.min ? this.min : this.state;
