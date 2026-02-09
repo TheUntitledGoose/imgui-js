@@ -176,8 +176,8 @@ class ImGui {
 			// offset = origin - mouse
 			// draw from mouse position using offset
 
-			globalMouseX = e.x;
-			globalMouseY = e.y;
+			globalMouseX = e.x + window.scrollX - canvas.getBoundingClientRect().x;
+			globalMouseY = e.y + window.scrollY - canvas.getBoundingClientRect().y;
 			if (e.buttons == 1 && this.moving) {
 				// this.update(this.x + e.movementX, this.y + e.movementY);
 				this.update(e.x + this.offsetX, e.y + this.offsetY);
