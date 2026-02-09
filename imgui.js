@@ -129,9 +129,11 @@ class ImGui {
 		ctx = this.ctx;
 
 		this.c.addEventListener("mousedown", (e) => {
-			if ((e.buttons == 1 || e.buttons == 2) && !this.hidden) this.checkClick(e.x, e.y, e);
-			if (e.buttons == 1) {		
-				if ( this.checkHide(e.x, e.y) ) {
+			if ((e.buttons == 1 || e.buttons == 2) && !this.hidden) 
+				this.checkClick(globalMouseX, globalMouseY, e);
+			
+			if (e.buttons == 1) {
+				if ( this.checkHide(globalMouseX, globalMouseY) ) {
 					this.hidden = !this.hidden;
 				}
 			}
@@ -160,11 +162,11 @@ class ImGui {
 				this.scrollbar_active = false;
 			}
 		
-			if (this.checkMove(e.x, e.y)) {
+			if (this.checkMove(globalMouseX, globalMouseY)) {
 				this.moving = true;
 
-				this.offsetX = this.x - e.x;
-				this.offsetY = this.y - e.y;
+				this.offsetX = this.x - globalMouseX;
+				this.offsetY = this.y - globalMouseY;
 			} else {
 				this.moving = false;
 			}
@@ -176,15 +178,15 @@ class ImGui {
 			// offset = origin - mouse
 			// draw from mouse position using offset
 
-			globalMouseX = e.x + window.scrollX - canvas.getBoundingClientRect().x;
-			globalMouseY = e.y + window.scrollY - canvas.getBoundingClientRect().y;
+			globalMouseX = e.x - canvas.getBoundingClientRect().x;
+			globalMouseY = e.y - canvas.getBoundingClientRect().y;
 			if (e.buttons == 1 && this.moving) {
 				// this.update(this.x + e.movementX, this.y + e.movementY);
-				this.update(e.x + this.offsetX, e.y + this.offsetY);
+				this.update(globalMouseX + this.offsetX, globalMouseY + this.offsetY);
 			} 
 			else if (e.buttons == 1 && this.resizing) this.resizeTrigFunc(e)
 			else if (e.buttons == 1 && this.scrollbar_active) this.scrollbarFunc(e)
-			else if (e.buttons == 1) this.checkClick(e.x, e.y, e);
+			else if (e.buttons == 1) this.checkClick(globalMouseX, globalMouseY, e);
 		});
 
 		this.c.addEventListener("mouseup", (e) => {
