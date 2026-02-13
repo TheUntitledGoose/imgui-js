@@ -190,7 +190,7 @@ class ImGui {
 		});
 
 		this.c.addEventListener("mouseup", (e) => {
-			this.checkClick(e.x, e.y, e);
+			this.checkClick(globalMouseX, globalMouseY, e);
 		});
 
 	}
@@ -247,20 +247,20 @@ class ImGui {
 	}
 
 	checkHover(x, y) {
-		var minX = this.x;
-		var minY = this.y;
-		var maxX = this.x + this.width;
-		var maxY = this.hidden ? this.y + TAB_HEIGHT : this.y + this.height;
+		var minX = this.x - this.c.getBoundingClientRect().x;
+		var minY = this.y - this.c.getBoundingClientRect().y;
+		var maxX = this.x - this.c.getBoundingClientRect().x + this.width;
+		var maxY = this.hidden ? this.y - this.c.getBoundingClientRect().y + TAB_HEIGHT : this.y - this.c.getBoundingClientRect().y + this.height;
 
 		if (between(x, minX, maxX) && between(y, minY, maxY)) return true;
 		return false;
 	}
 
 	checkBounding(x, y) {
-		var minX = this.x;
-		var minY = this.y;
-		var maxX = this.x + this.width;
-		var maxY = this.y + (this.hidden ? TAB_HEIGHT : this.height);
+		var minX = this.x - this.c.getBoundingClientRect().x;
+		var minY = this.y - this.c.getBoundingClientRect().y;
+		var maxX = this.x - this.c.getBoundingClientRect().x + this.width;
+		var maxY = this.y + (this.hidden ? TAB_HEIGHT - this.c.getBoundingClientRect().y : this.height - this.c.getBoundingClientRect().y);
 
 		if (between(x, minX, maxX) && between(y, minY, maxY)) return true;
 		return false;
